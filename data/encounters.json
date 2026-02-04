@@ -1,0 +1,16 @@
+{
+  "encounters": [
+    {
+      "id": "goblin_patrol",
+      "name": "Goblin Patrol",
+      "enemies": ["goblin_fighter", "goblin_scout"],
+      "reward": 50
+    },
+    {
+      "id": "skeleton_mage",
+      "name": "Skeleton Mage",
+      "enemies": ["skeleton_mage_enemy"],
+      "reward": 100
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "dungeons": [
+    {
+      "dungeon_id": "crypt_of_whispers",
+      "name": "Crypt of Whispers",
+      "description": "An ancient tomb echoing with cryptic whispers.",
+      "difficulty": "medium",
+      "start_room": "room_entrance",
+      "exit_room": "room_treasure",
+      "rooms": {
+        "room_entrance": {
+          "room_id": "room_entrance",
+          "name": "Stone Entrance",
+          "description": "A grand stone archway marks the entrance to the crypt. Cold air drifts from within, carrying the faint scent of incense long since burned to ash.",
+          "connections": ["room_hallway"],
+          "encounter": false,
+          "rest_allowed": false
+        },
+        "room_hallway": {
+          "room_id": "room_hallway",
+          "name": "Moonlit Hallway",
+          "description": "A narrow hallway lined with flickering torches. You hear the sound of skittering claws in the darkness.",
+          "connections": ["room_entrance", "room_crypt", "room_safe"],
+          "encounter": true,
+          "encounter_id": "goblin_patrol",
+          "rest_allowed": false
+        },
+        "room_crypt": {
+          "room_id": "room_crypt",
+          "name": "Ancient Crypt",
+          "description": "Skeletal remains rest in stone sarcophagi. The air is heavy with the magic of ages past.",
+          "connections": ["room_hallway", "room_treasure"],
+          "encounter": true,
+          "encounter_id": "skeleton_mage",
+          "rest_allowed": false
+        },
+        "room_safe": {
+          "room_id": "room_safe",
+          "name": "Sanctuary Chamber",
+          "description": "A quiet, protected chamber with soft blue runes glowing on the walls. You feel safe here.",
+          "connections": ["room_hallway"],
+          "encounter": false,
+          "rest_allowed": true
+        },
+        "room_treasure": {
+          "room_id": "room_treasure",
+          "name": "Treasure Vault",
+          "description": "Gold and gems glimmer in the torchlight. An ancient artifact rests upon a pedestal. This is the exit.",
+          "connections": ["room_crypt"],
+          "encounter": false,
+          "is_exit": true,
+          "rest_allowed": false
+        }
+      }
+    }
+  ]
+}

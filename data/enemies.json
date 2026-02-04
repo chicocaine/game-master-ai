@@ -1,0 +1,49 @@
+{
+  "enemies": [
+    {
+      "id": "goblin_fighter",
+      "name": "Goblin Fighter",
+      "race": "Goblin",
+      "class": "Fighter",
+      "hp": 8,
+      "ac": 11,
+      "attack_modifier": 1,
+      "known_attacks": ["goblin_slash"],
+      "spell_slots": {
+        "current": 0,
+        "max": 0
+      },
+      "known_spells": []
+    },
+    {
+      "id": "goblin_scout",
+      "name": "Goblin Scout",
+      "race": "Goblin",
+      "class": "Rogue",
+      "hp": 6,
+      "ac": 12,
+      "attack_modifier": 2,
+      "known_attacks": ["dagger_stab"],
+      "spell_slots": {
+        "current": 0,
+        "max": 0
+      },
+      "known_spells": []
+    },
+    {
+      "id": "skeleton_mage_enemy",
+      "name": "Skeleton Mage",
+      "race": "Undead",
+      "class": "Wizard",
+      "hp": 14,
+      "ac": 11,
+      "attack_modifier": 2,
+      "known_attacks": ["bone_strike"],
+      "spell_slots": {
+        "current": 2,
+        "max": 2
+      },
+      "known_spells": ["poison_cloud"]
+    }
+  ]
+}

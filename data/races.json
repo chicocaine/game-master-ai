@@ -1,0 +1,31 @@
+{
+  "races": [
+    {
+      "id": "human",
+      "name": "Human",
+      "description": "Adaptable and resilient.",
+      "modifiers": {
+        "max_hp": 1,
+        "attack_modifier": 0
+      }
+    },
+    {
+      "id": "elf",
+      "name": "Elf",
+      "description": "Graceful and quick-witted.",
+      "modifiers": {
+        "max_hp": 0,
+        "attack_modifier": 1
+      }
+    },
+    {
+      "id": "dwarf",
+      "name": "Dwarf",
+      "description": "Sturdy and strong.",
+      "modifiers": {
+        "max_hp": 2,
+        "attack_modifier": 0
+      }
+    }
+  ]
+}

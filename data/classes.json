@@ -1,0 +1,34 @@
+{
+  "classes": [
+    {
+      "id": "wizard",
+      "name": "Wizard",
+      "starting_hp": 8,
+      "base_ac": 11,
+      "attack_modifier": 1,
+      "starting_spell_slots": 3,
+      "allowed_attacks": ["staff_strike"],
+      "starting_spells": ["fire_bolt", "heal"]
+    },
+    {
+      "id": "fighter",
+      "name": "Fighter",
+      "starting_hp": 12,
+      "base_ac": 14,
+      "attack_modifier": 2,
+      "starting_spell_slots": 0,
+      "allowed_attacks": ["dagger_stab"],
+      "starting_spells": []
+    },
+    {
+      "id": "rogue",
+      "name": "Rogue",
+      "starting_hp": 10,
+      "base_ac": 13,
+      "attack_modifier": 2,
+      "starting_spell_slots": 1,
+      "allowed_attacks": ["dagger_stab"],
+      "starting_spells": ["sleep"]
+    }
+  ]
+}

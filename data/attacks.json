@@ -1,0 +1,40 @@
+{
+  "attacks": [
+    {
+      "id": "staff_strike",
+      "name": "Staff Strike",
+      "type": "melee",
+      "to_hit_modifier": 0,
+      "damage": "1d6",
+      "status_effect": null,
+      "description": "Strike with your staff."
+    },
+    {
+      "id": "dagger_stab",
+      "name": "Dagger Stab",
+      "type": "melee",
+      "to_hit_modifier": 1,
+      "damage": "1d4",
+      "status_effect": null,
+      "description": "A quick thrust with a sharp blade."
+    },
+    {
+      "id": "bone_strike",
+      "name": "Bone Strike",
+      "type": "melee",
+      "to_hit_modifier": 0,
+      "damage": "1d6",
+      "status_effect": null,
+      "description": "Strike with a bone weapon."
+    },
+    {
+      "id": "goblin_slash",
+      "name": "Goblin Slash",
+      "type": "melee",
+      "to_hit_modifier": 1,
+      "damage": "1d4+1",
+      "status_effect": null,
+      "description": "A vicious slash with curved blade."
+    }
+  ]
+}

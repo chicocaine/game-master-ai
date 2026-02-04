@@ -1,0 +1,48 @@
+{
+  "spells": [
+    {
+      "id": "fire_bolt",
+      "name": "Fire Bolt",
+      "category": "damage",
+      "target": "enemy",
+      "damage": "1d6",
+      "cost": 1,
+      "description": "A searing bolt of flame strikes the target."
+    },
+    {
+      "id": "poison_cloud",
+      "name": "Poison Cloud",
+      "category": "status",
+      "target": "enemies",
+      "cost": 1,
+      "status_effect": {
+        "type": "poisoned",
+        "duration": 2,
+        "magnitude": 2
+      },
+      "description": "A sickly green mist spreads through the area."
+    },
+    {
+      "id": "heal",
+      "name": "Heal",
+      "category": "heal",
+      "target": "ally",
+      "heal": "1d8",
+      "cost": 1,
+      "description": "Golden light washes over the target, mending wounds."
+    },
+    {
+      "id": "sleep",
+      "name": "Sleep",
+      "category": "status",
+      "target": "enemy",
+      "cost": 1,
+      "status_effect": {
+        "type": "stunned",
+        "duration": 1,
+        "magnitude": 1
+      },
+      "description": "The target's eyes grow heavy and close."
+    }
+  ]
+}
