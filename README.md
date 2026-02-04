@@ -1,0 +1,1 @@
+ **GameMasterAI** is a text-based, node-driven tabletop dungeon game managed by an AI agent. The agent interprets natural language commands, maintains game state, enforces rules, resolves combat, and narrates outcomes. The system is designed as a goal-directed AI agent operating within a constrained, rule-based environment.
