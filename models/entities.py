@@ -100,9 +100,9 @@ class Entity:
 
     def decrement_status_effects(self) -> None:
         """Decrement duration of all status effects and remove expired ones."""
-        self.status_effects = [e for e in self.status_effects if e.duration > 0]
         for effect in self.status_effects:
             effect.duration -= 1
+        self.status_effects = [e for e in self.status_effects if e.duration > 0]
 
     def get_ac_modifier(self) -> int:
         """Calculate AC modifier from status effects (fortified/vulnerable)."""
