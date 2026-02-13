@@ -49,6 +49,8 @@
 * Players may move only between connected rooms
 * Exploration is free-form (not turn-based)
 * Combat switches the system into Encounter Mode
+* Room descriptions auto-narrate only on first visit; repeat visits are brief unless asked
+* Rooms with encounters auto-start combat when first entered
 
 ---
 
@@ -259,6 +261,11 @@ The agent does **not**:
 5. **Validation** – Check action legality
 6. **Resolution** – Execute action and update state
 7. **Narration** – LLM generates descriptive output
+
+**Info/Query Handling:**
+
+If the input is a question (e.g., "where am I", "what rooms connect"), the LLM may return
+`action: null` with a narration-only response. This avoids forcing an invalid action.
 
 ### 13.2 Intent Parsing and Fallback Logic
 
@@ -1683,13 +1690,19 @@ function handle_exploration(input):
         mark room as visited
 
         if room has unresolved encounter:
-            create EncounterState
-            roll initiative
-            set game_mode to encounter
-            narrate encounter start
+        narrate encounter presence
+        prompt party of engagement
+        
+        create EncounterState
+        roll initiative
+        set game_mode to encounter
+        narrate encounter start
 
     else if action.type == explore:
+      if room first visit:
         narrate room description
+      else:
+        narrate brief reminder or details on request
 
     else if action.type == rest:
         apply rest rules
