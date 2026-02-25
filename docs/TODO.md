@@ -3,10 +3,13 @@
 
 <!-- Game Data and Models -->
 ## Game Data and Models
-- [ ] define and implement models
-- [ ] define JSON data schemas
-- [ ] implement data loaders
-- [ ] implement data validators
+- [ ] define and implement game models
+- [ ] define JSON game data schemas
+- [ ] implement game data loaders
+- [ ] implement game data validators
+- [ ] event types and event model implementation
+- [ ] action types and action model implementation
+- [ ] narration model implementation
 
 <!-- Game Helpers and Util -->
 ## Game Helpers and Util
@@ -17,7 +20,6 @@
 
 <!-- Game Engine -->
 ## Game Engine
-- [ ] event integration
 - [ ] pre-game loop
 - [ ] in-game loop
 - [ ] post-game loop
