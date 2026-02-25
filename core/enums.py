@@ -50,3 +50,11 @@ class SpellType(Enum):
     AOE_BUFF = "aoe_buff"
     AOE_DEBUFF = "aoe_debuff"
     AOE_CONTROL = "aoe_control"
+
+class WeaponType(Enum):
+    SIMPLE_MELEE = "simple_melee"
+    SIMPLE_RANGED = "simple_ranged"
+    MARTIAL_MELEE = "martial_melee"
+    MARTIAL_RANGED = "martial_ranged"
+    MAGIC_MELEE = "magic_melee"
+    MAGIC_RANGED = "magic_ranged"
