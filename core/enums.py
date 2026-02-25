@@ -30,3 +30,23 @@ class ControlType(Enum):
     ASLEEP = "asleep"
     RESTRAINED = "restrained"
     SILENCED = "silenced"
+
+class AttackType(Enum):
+    MELEE = "melee"
+    RANGED = "ranged"
+    UNARMED = "unarmed"
+    AOE_MELEE = "aoe_melee"
+    AOE_RANGED = "aoe_ranged"
+    AOE_UNARMED = "aoe_unarmed"
+
+class SpellType(Enum):
+    ATTACK = "attack"
+    HEAL = "heal"
+    BUFF = "buff"
+    DEBUFF = "debuff"
+    CONTROL = "control"
+    AOE_ATTACK = "aoe_attack"
+    AOE_HEAL = "aoe_heal"
+    AOE_BUFF = "aoe_buff"
+    AOE_DEBUFF = "aoe_debuff"
+    AOE_CONTROL = "aoe_control"
