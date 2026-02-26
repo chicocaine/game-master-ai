@@ -1,0 +1,42 @@
+[
+  {
+    "id": "arc_warrior_01",
+    "name": "Warrior",
+    "description": "Frontline martial specialist.",
+    "hp_mod": 4,
+    "AC_mod": 2,
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": [],
+    "weapon_constraints": {
+      "proficiency": ["simple", "martial"],
+      "handling": ["one_handed", "two_handed", "versatile"],
+      "weight_class": ["light", "heavy"],
+      "delivery": ["melee", "ranged", "versatile"],
+      "magic_type": ["mundane", "enchanted"]
+    },
+    "known_spells": [],
+    "known_attacks": ["atk_longsword_01"],
+    "weapons": ["wpn_longsword_01"]
+  },
+  {
+    "id": "arc_sage_01",
+    "name": "Sage",
+    "description": "Arcane tactician with magical focus.",
+    "hp_mod": 1,
+    "AC_mod": 0,
+    "resistances": ["psychic"],
+    "immunities": [],
+    "vulnerabilities": [],
+    "weapon_constraints": {
+      "proficiency": ["arcane"],
+      "handling": ["two_handed", "versatile"],
+      "weight_class": ["light"],
+      "delivery": ["ranged", "versatile"],
+      "magic_type": ["focus", "augment"]
+    },
+    "known_spells": ["spl_fire_bolt_01", "spl_heal_touch_01"],
+    "known_attacks": [],
+    "weapons": ["wpn_staff_01", "wpn_spellbow_01"]
+  }
+]

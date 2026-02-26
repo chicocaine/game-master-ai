@@ -1,0 +1,28 @@
+[
+  {
+    "id": "race_human_01",
+    "name": "Human",
+    "description": "Adaptable and resilient, with balanced combat capability.",
+    "base_hp": 12,
+    "base_AC": 11,
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": [],
+    "archetype_constraints": ["arc_warrior_01", "arc_sage_01"],
+    "known_spells": [],
+    "known_attacks": ["atk_longsword_01"]
+  },
+  {
+    "id": "race_fireborn_01",
+    "name": "Fireborn",
+    "description": "A flame-touched ancestry with innate fire magic.",
+    "base_hp": 10,
+    "base_AC": 10,
+    "resistances": ["fire"],
+    "immunities": [],
+    "vulnerabilities": ["cold"],
+    "archetype_constraints": ["arc_sage_01"],
+    "known_spells": ["spl_fire_bolt_01"],
+    "known_attacks": ["atk_fire_arrow_01"]
+  }
+]

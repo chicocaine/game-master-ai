@@ -1,0 +1,83 @@
+[
+  {
+    "id": "se_atk_up_01",
+    "name": "Battle Focus",
+    "description": "Increase attack power for a short duration.",
+    "type": "attack_modifier",
+    "duration": 3,
+    "parameters": {
+      "value": 2
+    }
+  },
+  {
+    "id": "se_ac_up_01",
+    "name": "Stone Skin",
+    "description": "Increase armor class temporarily.",
+    "type": "ac_modifier",
+    "duration": 2,
+    "parameters": {
+      "value": 1
+    }
+  },
+  {
+    "id": "se_dot_fire_01",
+    "name": "Burning",
+    "description": "Take fire damage over time.",
+    "type": "DoT",
+    "duration": 3,
+    "parameters": {
+      "value": 4,
+      "damage_type": "fire"
+    }
+  },
+  {
+    "id": "se_hot_01",
+    "name": "Regeneration",
+    "description": "Recover health over time.",
+    "type": "HoT",
+    "duration": 3,
+    "parameters": {
+      "value": 3
+    }
+  },
+  {
+    "id": "se_ctrl_01",
+    "name": "Concussion",
+    "description": "Target is stunned and cannot act.",
+    "type": "control",
+    "duration": 1,
+    "parameters": {
+      "control_type": "stunned"
+    }
+  },
+  {
+    "id": "se_imm_poison_01",
+    "name": "Antitoxin Aura",
+    "description": "Become immune to poison damage.",
+    "type": "immunity",
+    "duration": 5,
+    "parameters": {
+      "damage_type": "poison"
+    }
+  },
+  {
+    "id": "se_res_cold_01",
+    "name": "Frost Ward",
+    "description": "Gain resistance to cold damage.",
+    "type": "resistance",
+    "duration": 4,
+    "parameters": {
+      "damage_type": "cold"
+    }
+  },
+  {
+    "id": "se_vuln_lightning_01",
+    "name": "Conductive",
+    "description": "Become vulnerable to lightning damage.",
+    "type": "vulnerable",
+    "duration": 2,
+    "parameters": {
+      "damage_type": "lightning"
+    }
+  }
+]

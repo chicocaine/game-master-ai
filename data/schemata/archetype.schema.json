@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/archetype.schema.json",
+  "title": "Archetype",
+  "description": "Schema for serialized Archetype model objects.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "hp_mod",
+    "AC_mod",
+    "resistances",
+    "immunities",
+    "vulnerabilities",
+    "weapon_constraints",
+    "known_spells",
+    "known_attacks",
+    "weapons"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "hp_mod": { "type": "integer" },
+    "AC_mod": { "type": "integer" },
+    "resistances": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "immunities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "weapon_constraints": {
+      "type": "object",
+      "required": ["proficiency", "handling", "weight_class", "delivery", "magic_type"],
+      "properties": {
+        "proficiency": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/weaponProficiency" }
+        },
+        "handling": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/weaponHandling" }
+        },
+        "weight_class": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/weaponWeightClass" }
+        },
+        "delivery": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/weaponDelivery" }
+        },
+        "magic_type": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/weaponMagicType" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "known_spells": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_attacks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "weapons": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "damageType": {
+      "type": "string",
+      "enum": [
+        "acid",
+        "bludgeoning",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "piercing",
+        "poison",
+        "psychic",
+        "radiant",
+        "slashing",
+        "thunder"
+      ]
+    },
+    "weaponProficiency": {
+      "type": "string",
+      "enum": ["simple", "martial", "exotic", "arcane", "divine", "tech"]
+    },
+    "weaponHandling": {
+      "type": "string",
+      "enum": ["one_handed", "two_handed", "versatile"]
+    },
+    "weaponWeightClass": {
+      "type": "string",
+      "enum": ["light", "heavy"]
+    },
+    "weaponDelivery": {
+      "type": "string",
+      "enum": ["melee", "ranged", "versatile"]
+    },
+    "weaponMagicType": {
+      "type": "string",
+      "enum": ["mundane", "enchanted", "focus", "augment"]
+    },
+    "archetypeCollection": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    }
+  }
+}

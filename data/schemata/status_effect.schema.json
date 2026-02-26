@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/status_effect.schema.json",
+  "title": "StatusEffect",
+  "description": "Schema for serialized StatusEffect model objects.",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/atkModStatusEffect" },
+    { "$ref": "#/$defs/acModStatusEffect" },
+    { "$ref": "#/$defs/dotStatusEffect" },
+    { "$ref": "#/$defs/hotStatusEffect" },
+    { "$ref": "#/$defs/controlStatusEffect" },
+    { "$ref": "#/$defs/immunityStatusEffect" },
+    { "$ref": "#/$defs/resistanceStatusEffect" },
+    { "$ref": "#/$defs/vulnerableStatusEffect" }
+  ],
+  "$defs": {
+    "damageType": {
+      "type": "string",
+      "enum": [
+        "acid",
+        "bludgeoning",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "piercing",
+        "poison",
+        "psychic",
+        "radiant",
+        "slashing",
+        "thunder"
+      ]
+    },
+    "controlType": {
+      "type": "string",
+      "enum": [
+        "stunned",
+        "asleep",
+        "restrained",
+        "silenced"
+      ]
+    },
+    "baseStatusEffect": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "duration",
+        "parameters"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "duration": { "type": "integer" },
+        "parameters": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "atkModStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "attack_modifier" },
+            "parameters": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "value": { "type": "integer" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "acModStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "ac_modifier" },
+            "parameters": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "value": { "type": "integer" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "dotStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "DoT" },
+            "parameters": {
+              "type": "object",
+              "required": ["value", "damage_type"],
+              "properties": {
+                "value": { "type": "integer" },
+                "damage_type": { "$ref": "#/$defs/damageType" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "hotStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "HoT" },
+            "parameters": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "value": { "type": "integer" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "controlStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "control" },
+            "parameters": {
+              "type": "object",
+              "required": ["control_type"],
+              "properties": {
+                "control_type": { "$ref": "#/$defs/controlType" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "immunityStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "immunity" },
+            "parameters": {
+              "type": "object",
+              "required": ["damage_type"],
+              "properties": {
+                "damage_type": { "$ref": "#/$defs/damageType" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "resistanceStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "resistance" },
+            "parameters": {
+              "type": "object",
+              "required": ["damage_type"],
+              "properties": {
+                "damage_type": { "$ref": "#/$defs/damageType" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "vulnerableStatusEffect": {
+      "allOf": [
+        { "$ref": "#/$defs/baseStatusEffect" },
+        {
+          "properties": {
+            "type": { "const": "vulnerable" },
+            "parameters": {
+              "type": "object",
+              "required": ["damage_type"],
+              "properties": {
+                "damage_type": { "$ref": "#/$defs/damageType" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    "statusEffectCollection": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    }
+  }
+}

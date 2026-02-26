@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/spell.schema.json",
+  "title": "Spell",
+  "description": "Schema for serialized Spell model objects.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "type",
+    "damage_type",
+    "value",
+    "hit_modifiers",
+    "status_effects"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "attack",
+        "heal",
+        "buff",
+        "debuff",
+        "control",
+        "aoe_attack",
+        "aoe_heal",
+        "aoe_buff",
+        "aoe_debuff",
+        "aoe_control"
+      ]
+    },
+    "damage_type": {
+      "type": "string",
+      "enum": [
+        "acid",
+        "bludgeoning",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "piercing",
+        "poison",
+        "psychic",
+        "radiant",
+        "slashing",
+        "thunder"
+      ]
+    },
+    "value": { "type": "string", "minLength": 1 },
+    "hit_modifiers": { "type": "integer" },
+    "status_effects": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "spellCollection": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    }
+  }
+}

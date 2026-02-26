@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/weapon.schema.json",
+  "title": "Weapon",
+  "description": "Schema for serialized Weapon model objects.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "proficiency",
+    "handling",
+    "weight_class",
+    "delivery",
+    "magic_type",
+    "known_attacks",
+    "known_spells"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "proficiency": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "martial",
+        "exotic",
+        "arcane",
+        "divine",
+        "tech"
+      ]
+    },
+    "handling": {
+      "type": "string",
+      "enum": [
+        "one_handed",
+        "two_handed",
+        "versatile"
+      ]
+    },
+    "weight_class": {
+      "type": "string",
+      "enum": [
+        "light",
+        "heavy"
+      ]
+    },
+    "delivery": {
+      "type": "string",
+      "enum": [
+        "melee",
+        "ranged",
+        "versatile"
+      ]
+    },
+    "magic_type": {
+      "type": "string",
+      "enum": [
+        "mundane",
+        "enchanted",
+        "focus",
+        "augment"
+      ]
+    },
+    "known_attacks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_spells": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "weaponCollection": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    }
+  }
+}

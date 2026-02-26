@@ -1,0 +1,38 @@
+[
+  {
+    "id": "wpn_longsword_01",
+    "name": "Longsword",
+    "description": "Balanced martial blade effective in close combat.",
+    "proficiency": "martial",
+    "handling": "versatile",
+    "weight_class": "heavy",
+    "delivery": "melee",
+    "magic_type": "mundane",
+    "known_attacks": ["atk_longsword_01"],
+    "known_spells": []
+  },
+  {
+    "id": "wpn_spellbow_01",
+    "name": "Spellbow",
+    "description": "A ranged focus that channels elemental arrows and minor arcane effects.",
+    "proficiency": "arcane",
+    "handling": "two_handed",
+    "weight_class": "light",
+    "delivery": "ranged",
+    "magic_type": "focus",
+    "known_attacks": ["atk_fire_arrow_01"],
+    "known_spells": ["spl_fire_bolt_01"]
+  },
+  {
+    "id": "wpn_staff_01",
+    "name": "Arcane Staff",
+    "description": "A focused conduit that augments spellcasting.",
+    "proficiency": "arcane",
+    "handling": "two_handed",
+    "weight_class": "light",
+    "delivery": "versatile",
+    "magic_type": "augment",
+    "known_attacks": [],
+    "known_spells": ["spl_fire_bolt_01", "spl_heal_touch_01"]
+  }
+]

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/race.schema.json",
+  "title": "Race",
+  "description": "Schema for serialized Race model objects.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "base_hp",
+    "base_AC",
+    "resistances",
+    "immunities",
+    "vulnerabilities",
+    "archetype_constraints",
+    "known_spells",
+    "known_attacks"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "base_hp": { "type": "integer" },
+    "base_AC": { "type": "integer" },
+    "resistances": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "immunities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "archetype_constraints": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_spells": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_attacks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "damageType": {
+      "type": "string",
+      "enum": [
+        "acid",
+        "bludgeoning",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "piercing",
+        "poison",
+        "psychic",
+        "radiant",
+        "slashing",
+        "thunder"
+      ]
+    },
+    "raceCollection": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    }
+  }
+}
