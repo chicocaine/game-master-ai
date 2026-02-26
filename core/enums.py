@@ -51,10 +51,30 @@ class SpellType(Enum):
     AOE_DEBUFF = "aoe_debuff"
     AOE_CONTROL = "aoe_control"
 
-class WeaponType(Enum):
-    SIMPLE_MELEE = "simple_melee"
-    SIMPLE_RANGED = "simple_ranged"
-    MARTIAL_MELEE = "martial_melee"
-    MARTIAL_RANGED = "martial_ranged"
-    MAGIC_MELEE = "magic_melee"
-    MAGIC_RANGED = "magic_ranged"
+class WeaponProficiency(Enum):
+    SIMPLE= "simple"
+    MARTIAL = "martial"
+    EXOTIC = "exotic"
+    ARCANE = "arcane"
+    DIVINE = "divine"
+    TECH = "tech"
+
+class WeaponHandling(Enum):
+    ONE_HANDED = "one_handed"
+    TWO_HANDED = "two_handed"
+    VERSATILE = "versatile"
+
+class WeaponWeightClass(Enum):
+    LIGHT = "light"
+    HEAVY = "heavy"
+
+class WeaponDelivery(Enum):
+    MELEE = "melee"
+    RANGED = "ranged"
+    VERSATILE = "versatile"
+
+class WeaponMagicType(Enum):
+    MUNDANE = "mundane"
+    ENCHANTED = "enchanted"
+    FOCUS = "focus"
+    AUGMENT = "augment"

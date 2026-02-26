@@ -14,6 +14,16 @@ def _get_int(value: Any) -> int:
 	return int(value)
 
 
+def _parse_str_list(value: Any) -> List[str]:
+	if not isinstance(value, list):
+		return []
+
+	parsed: List[str] = []
+	for item in value:
+		parsed.append(str(item))
+	return parsed
+
+
 def _parse_damage_type(value: Any) -> DamageType:
 	if isinstance(value, DamageType):
 		return value
@@ -66,6 +76,7 @@ class Race:
 	resistances: List[DamageType] = field(default_factory=list)
 	immunities: List[DamageType] = field(default_factory=list)
 	vulnerabilities: List[DamageType] = field(default_factory=list)
+	archetype_constraints: List[str] = field(default_factory=list)
 	known_spells: List[Spell] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
 
@@ -79,6 +90,7 @@ class Race:
 			"resistances": [damage_type.value for damage_type in self.resistances],
 			"immunities": [damage_type.value for damage_type in self.immunities],
 			"vulnerabilities": [damage_type.value for damage_type in self.vulnerabilities],
+			"archetype_constraints": list(self.archetype_constraints),
 			"known_spells": [spell.to_dict() for spell in self.known_spells],
 			"known_attacks": [attack.to_dict() for attack in self.known_attacks],
 		}
@@ -97,6 +109,7 @@ class Race:
 			resistances=_parse_damage_type_list(data.get("resistances", [])),
 			immunities=_parse_damage_type_list(data.get("immunities", [])),
 			vulnerabilities=_parse_damage_type_list(data.get("vulnerabilities", [])),
+			archetype_constraints=_parse_str_list(data.get("archetype_constraints", [])),
 			known_spells=_parse_known_spells(data.get("known_spells", [])),
 			known_attacks=_parse_known_attacks(data.get("known_attacks", [])),
 		)

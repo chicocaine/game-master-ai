@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
-from core.enums import SpellType
+from core.enums import SpellType, DamageType
 from models.status_effect import StatusEffect
 
 
@@ -9,6 +9,14 @@ def _parse_spell_type(spell_type: Any) -> SpellType:
 	if isinstance(spell_type, SpellType):
 		return spell_type
 	return SpellType(str(spell_type))
+
+
+def _parse_damage_type(damage_type: Any) -> DamageType:
+	if isinstance(damage_type, DamageType):
+		return damage_type
+	if damage_type in (None, ""):
+		return DamageType.FORCE
+	return DamageType(str(damage_type))
 
 
 def _get_str(data: dict, key: str) -> str:
@@ -46,6 +54,7 @@ class Spell:
 	name: str
 	description: str
 	type: SpellType
+	damage_type: DamageType
 	value: str
 	hit_modifiers: int = 0
 	status_effects: Optional[List[StatusEffect]] = None
@@ -56,6 +65,7 @@ class Spell:
 			"name": self.name,
 			"description": self.description,
 			"type": self.type.value,
+			"damage_type": self.damage_type.value,
 			"value": self.value,
 			"hit_modifiers": self.hit_modifiers,
 			"status_effects": (
@@ -72,6 +82,7 @@ class Spell:
 			name=_get_str(data, "name"),
 			description=_get_str(data, "description"),
 			type=_parse_spell_type(data.get("type")),
+			damage_type=_parse_damage_type(data.get("damage_type")),
 			value=_get_str(data, "value"),
 			hit_modifiers=_get_hit_modifier(data),
 			status_effects=_parse_status_effects(data.get("status_effects")),

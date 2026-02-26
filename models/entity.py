@@ -1,7 +1,14 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-from core.enums import DamageType, WeaponType
+from core.enums import ( 
+    DamageType, 
+    WeaponProficiency, 
+    WeaponHandling, 
+    WeaponWeightClass, 
+    WeaponDelivery, 
+    WeaponMagicType
+)
 from models.attack import Attack
 from models.archetype import Archetype
 from models.race import Race
@@ -54,7 +61,33 @@ def _parse_weapon(value: Any) -> Weapon:
 		return value
 	if isinstance(value, dict):
 		return Weapon.from_dict(value)
-	return Weapon(id="", name="", description="", type=WeaponType.SIMPLE_MELEE)
+	return _default_weapon()
+
+
+def _default_weapon() -> Weapon:
+	return Weapon(
+		id="",
+		name="",
+		description="",
+		proficiency=WeaponProficiency.SIMPLE,
+		handling=WeaponHandling.ONE_HANDED,
+		weight_class=WeaponWeightClass.LIGHT,
+		delivery=WeaponDelivery.MELEE,
+		magic_type=WeaponMagicType.MUNDANE,
+	)
+
+
+def _parse_weapons(value: Any) -> List[Weapon]:
+	if not isinstance(value, list):
+		return []
+
+	weapons: List[Weapon] = []
+	for item in value:
+		if isinstance(item, Weapon):
+			weapons.append(item)
+		elif isinstance(item, dict):
+			weapons.append(Weapon.from_dict(item))
+	return weapons
 
 
 def _parse_known_attacks(value: Any) -> List[Attack]:
@@ -97,6 +130,32 @@ def _dedupe_by_id(items: List[Any]) -> List[Any]:
 	return result
 
 
+def _validate_archetype_constraint(race: Race, archetype: Archetype) -> None:
+	allowed_archetypes = getattr(race, "archetype_constraints", [])
+	if not allowed_archetypes:
+		return
+	if archetype.id not in allowed_archetypes:
+		raise ValueError(f"Archetype '{archetype.id}' is not allowed for race '{race.id}'")
+
+
+def _validate_weapon_constraints(archetype: Archetype, weapons: List[Weapon]) -> None:
+	constraints = getattr(archetype, "weapon_constraints", None)
+	if constraints is None:
+		return
+
+	for weapon in weapons:
+		if constraints.proficiency and weapon.proficiency not in constraints.proficiency:
+			raise ValueError(f"Weapon '{weapon.id}' violates proficiency constraints")
+		if constraints.handling and weapon.handling not in constraints.handling:
+			raise ValueError(f"Weapon '{weapon.id}' violates handling constraints")
+		if constraints.weight_class and weapon.weight_class not in constraints.weight_class:
+			raise ValueError(f"Weapon '{weapon.id}' violates weight class constraints")
+		if constraints.delivery and weapon.delivery not in constraints.delivery:
+			raise ValueError(f"Weapon '{weapon.id}' violates delivery constraints")
+		if constraints.magic_type and weapon.magic_type not in constraints.magic_type:
+			raise ValueError(f"Weapon '{weapon.id}' violates magic type constraints")
+
+
 @dataclass
 class Entity:
 	id: str
@@ -104,14 +163,20 @@ class Entity:
 	description: str
 	race: Race
 	archetype: Archetype
-	weapon: Weapon
 	hp: int
 	AC: int
+	weapons: List[Weapon] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
 	known_spells: List[Spell] = field(default_factory=list)
 	resistances: List[DamageType] = field(default_factory=list)
 	immunities: List[DamageType] = field(default_factory=list)
 	vulnerabilities: List[DamageType] = field(default_factory=list)
+
+	@property
+	def weapon(self) -> Weapon:
+		if self.weapons:
+			return self.weapons[0]
+		return _default_weapon()
 
 	@property
 	def max_hp(self) -> int:
@@ -123,17 +188,25 @@ class Entity:
 
 	@property
 	def merged_attacks(self) -> List[Attack]:
+		weapon_attacks: List[Attack] = []
+		for weapon in self.weapons:
+			weapon_attacks.extend(weapon.known_attacks)
+
 		merged = (
 			self.race.known_attacks
 			+ self.archetype.known_attacks
-			+ self.weapon.known_attacks
+			+ weapon_attacks
 			+ self.known_attacks
 		)
 		return _dedupe_by_id(merged)
 
 	@property
 	def merged_spells(self) -> List[Spell]:
-		merged = self.race.known_spells + self.archetype.known_spells + self.known_spells
+		weapon_spells: List[Spell] = []
+		for weapon in self.weapons:
+			weapon_spells.extend(weapon.known_spells)
+
+		merged = self.race.known_spells + self.archetype.known_spells + weapon_spells + self.known_spells
 		return _dedupe_by_id(merged)
 
 	@property
@@ -158,6 +231,7 @@ class Entity:
 			"description": self.description,
 			"race": self.race.to_dict(),
 			"archetype": self.archetype.to_dict(),
+			"weapons": [weapon.to_dict() for weapon in self.weapons],
 			"weapon": self.weapon.to_dict(),
 			"hp": self.hp,
 			"AC": self.AC,
@@ -171,10 +245,45 @@ class Entity:
 		}
 
 	@classmethod
+	def create(
+		cls,
+		id: str,
+		name: str,
+		description: str,
+		race: Any,
+		archetype: Any,
+		weapons: Any,
+	) -> "Entity":
+		race_model = _parse_race(race)
+		archetype_model = _parse_archetype(archetype)
+		weapons_model = _parse_weapons(weapons)
+
+		_validate_archetype_constraint(race_model, archetype_model)
+		_validate_weapon_constraints(archetype_model, weapons_model)
+
+		hp_default = race_model.base_hp + archetype_model.hp_mod
+		ac_default = race_model.base_AC + archetype_model.AC_mod
+
+		return cls(
+			id=id,
+			name=name,
+			description=description,
+			race=race_model,
+			archetype=archetype_model,
+			weapons=weapons_model,
+			hp=hp_default,
+			AC=ac_default,
+		)
+
+	@classmethod
 	def from_dict(cls, data: dict) -> "Entity":
 		race_model = _parse_race(data.get("race"))
 		archetype_model = _parse_archetype(data.get("archetype", data.get("class")))
-		weapon_model = _parse_weapon(data.get("weapon"))
+		weapons_model = _parse_weapons(data.get("weapons", []))
+		if not weapons_model:
+			legacy_weapon = _parse_weapon(data.get("weapon"))
+			if legacy_weapon.id != "":
+				weapons_model = [legacy_weapon]
 
 		hp_default = race_model.base_hp + archetype_model.hp_mod
 		ac_default = race_model.base_AC + archetype_model.AC_mod
@@ -185,7 +294,7 @@ class Entity:
 			description=_get_str(data, "description"),
 			race=race_model,
 			archetype=archetype_model,
-			weapon=weapon_model,
+			weapons=weapons_model,
 			hp=_get_int(data.get("hp", hp_default)),
 			AC=_get_int(data.get("AC", ac_default)),
 			known_attacks=_parse_known_attacks(data.get("known_attacks", [])),
@@ -194,3 +303,21 @@ class Entity:
 			immunities=_parse_damage_type_list(data.get("immunities", [])),
 			vulnerabilities=_parse_damage_type_list(data.get("vulnerabilities", [])),
 		)
+
+
+def create_entity(
+	id: str,
+	name: str,
+	description: str,
+	race: Any,
+	archetype: Any,
+	weapons: Any,
+) -> Entity:
+	return Entity.create(
+		id=id,
+		name=name,
+		description=description,
+		race=race,
+		archetype=archetype,
+		weapons=weapons,
+	)

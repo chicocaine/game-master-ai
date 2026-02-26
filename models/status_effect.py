@@ -21,6 +21,20 @@ def _get_int(value: Any) -> int:
     return int(value)
 
 
+def _parse_damage_type(value: Any, default: DamageType = DamageType.FORCE) -> DamageType:
+    if value in (None, ""):
+        return default
+    if isinstance(value, DamageType):
+        return value
+    return DamageType(str(value))
+
+
+def _parse_control_type(value: Any) -> ControlType:
+    if isinstance(value, ControlType):
+        return value
+    return ControlType(str(value))
+
+
 def _get_duration(data: dict) -> Optional[int]:
     if "duration" in data:
         return _get_int(data.get("duration"))
@@ -105,7 +119,7 @@ class ACModStatusEffect(StatusEffect):
             id=_get_str(data, "id"),
             name=_get_str(data, "name"),
             description=_get_str(data, "description"),
-            amount=_get_int(params.get("value", 0)),
+            value=_get_int(params.get("value", 0)),
             duration=_get_duration(data),
         )
 
@@ -113,14 +127,14 @@ class ACModStatusEffect(StatusEffect):
 @dataclass
 class DoTStatusEffect(StatusEffect):
     value: int = 0
-    damage_type: DamageType
+    damage_type: DamageType = DamageType.FORCE
     type: StatusEffectType = field(init=False, default=StatusEffectType.DOT)
 
     def to_dict(self) -> dict:
         data = super().to_dict()
         data["parameters"] = {
             "value": self.value,
-            "damage_type": self.damage_type,
+            "damage_type": self.damage_type.value,
         }
         return data
 
@@ -133,7 +147,7 @@ class DoTStatusEffect(StatusEffect):
             description=_get_str(data, "description"),
             value=_get_int(params.get("value", 0)),
             duration=_get_duration(data),
-            damage_type=params.get("damage_type", ""),
+            damage_type=_parse_damage_type(data.get("damage_type", params.get("damage_type"))),
         )
 
 
@@ -163,13 +177,13 @@ class HoTStatusEffect(StatusEffect):
 
 @dataclass
 class ControlStatusEffect(StatusEffect):
-    control_type: ControlType
+    control_type: ControlType = ControlType.STUNNED
     type: StatusEffectType = field(init=False, default=StatusEffectType.CONTROL)
 
     def to_dict(self) -> dict:
         data = super().to_dict()
         data["parameters"] = {
-            "control_type": self.control_type,
+            "control_type": self.control_type.value,
         }
         return data
 
@@ -180,20 +194,20 @@ class ControlStatusEffect(StatusEffect):
             id=_get_str(data, "id"),
             name=_get_str(data, "name"),
             description=_get_str(data, "description"),
-            control_type=params.get("control_type", ""),
+            control_type=_parse_control_type(params.get("control_type", "stunned")),
             duration=_get_duration(data),
         )
 
 
 @dataclass
 class ImmunityStatusEffect(StatusEffect):
-    damage_type: DamageType
+    damage_type: DamageType = DamageType.FORCE
     type: StatusEffectType = field(init=False, default=StatusEffectType.IMMUNITY)
 
     def to_dict(self) -> dict:
         data = super().to_dict()
         data["parameters"] = {
-            "damage_type": self.damage_type,
+            "damage_type": self.damage_type.value,
         }
         return data
 
@@ -204,20 +218,20 @@ class ImmunityStatusEffect(StatusEffect):
             id=_get_str(data, "id"),
             name=_get_str(data, "name"),
             description=_get_str(data, "description"),
-            damage_type=params.get("damage_type", ""),
+            damage_type=_parse_damage_type(data.get("damage_type", params.get("damage_type"))),
             duration=_get_duration(data),
         )
 
 
 @dataclass
 class ResStatusEffect(StatusEffect):
-    damage_type: DamageType
+    damage_type: DamageType = DamageType.FORCE
     type: StatusEffectType = field(init=False, default=StatusEffectType.RESISTANCE)
 
     def to_dict(self) -> dict:
         data = super().to_dict()
         data["parameters"] = {
-            "damage_type": self.damage_type,
+            "damage_type": self.damage_type.value,
         }
         return data
 
@@ -228,20 +242,20 @@ class ResStatusEffect(StatusEffect):
             id=_get_str(data, "id"),
             name=_get_str(data, "name"),
             description=_get_str(data, "description"),
-            resistance_type=params.get("damage_type", ""),
+            damage_type=_parse_damage_type(data.get("damage_type", params.get("damage_type"))),
             duration=_get_duration(data),
         )
 
 
 @dataclass
 class VulnerableStatusEffect(StatusEffect):
-    damage_type: DamageType
+    damage_type: DamageType = DamageType.FORCE
     type: StatusEffectType = field(init=False, default=StatusEffectType.VULNERABLE)
 
     def to_dict(self) -> dict:
         data = super().to_dict()
         data["parameters"] = {
-            "damage_type": self.damage_type,
+            "damage_type": self.damage_type.value,
         }
         return data
 
@@ -252,7 +266,7 @@ class VulnerableStatusEffect(StatusEffect):
             id=_get_str(data, "id"),
             name=_get_str(data, "name"),
             description=_get_str(data, "description"),
-            vulnerable_type=params.get("damage_type", ""),
+            damage_type=_parse_damage_type(data.get("damage_type", params.get("damage_type"))),
             duration=_get_duration(data),
         )
 

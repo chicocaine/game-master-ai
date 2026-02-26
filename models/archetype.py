@@ -1,7 +1,14 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
-from core.enums import DamageType
+from core.enums import (
+	DamageType,
+	WeaponProficiency,
+	WeaponHandling,
+	WeaponWeightClass,
+	WeaponDelivery,
+	WeaponMagicType,
+)
 from models.attack import Attack
 from models.spell import Spell
 from models.weapon import Weapon
@@ -70,6 +77,77 @@ def _parse_weapons(value: Any) -> List[Weapon]:
 	return weapons
 
 
+def _parse_weapon_proficiency(value: Any) -> WeaponProficiency:
+	if isinstance(value, WeaponProficiency):
+		return value
+	return WeaponProficiency(str(value))
+
+
+def _parse_weapon_handling(value: Any) -> WeaponHandling:
+	if isinstance(value, WeaponHandling):
+		return value
+	return WeaponHandling(str(value))
+
+
+def _parse_weapon_weight_class(value: Any) -> WeaponWeightClass:
+	if isinstance(value, WeaponWeightClass):
+		return value
+	return WeaponWeightClass(str(value))
+
+
+def _parse_weapon_delivery(value: Any) -> WeaponDelivery:
+	if isinstance(value, WeaponDelivery):
+		return value
+	return WeaponDelivery(str(value))
+
+
+def _parse_weapon_magic_type(value: Any) -> WeaponMagicType:
+	if isinstance(value, WeaponMagicType):
+		return value
+	return WeaponMagicType(str(value))
+
+
+def _parse_enum_list(value: Any, parser) -> List[Any]:
+	if not isinstance(value, list):
+		return []
+
+	parsed: List[Any] = []
+	for item in value:
+		parsed.append(parser(item))
+	return parsed
+
+
+@dataclass
+class WeaponConstraints:
+	proficiency: List[WeaponProficiency] = field(default_factory=list)
+	handling: List[WeaponHandling] = field(default_factory=list)
+	weight_class: List[WeaponWeightClass] = field(default_factory=list)
+	delivery: List[WeaponDelivery] = field(default_factory=list)
+	magic_type: List[WeaponMagicType] = field(default_factory=list)
+
+	def to_dict(self) -> dict:
+		return {
+			"proficiency": [item.value for item in self.proficiency],
+			"handling": [item.value for item in self.handling],
+			"weight_class": [item.value for item in self.weight_class],
+			"delivery": [item.value for item in self.delivery],
+			"magic_type": [item.value for item in self.magic_type],
+		}
+
+	@classmethod
+	def from_dict(cls, data: Any) -> "WeaponConstraints":
+		if not isinstance(data, dict):
+			return cls()
+
+		return cls(
+			proficiency=_parse_enum_list(data.get("proficiency", []), _parse_weapon_proficiency),
+			handling=_parse_enum_list(data.get("handling", []), _parse_weapon_handling),
+			weight_class=_parse_enum_list(data.get("weight_class", []), _parse_weapon_weight_class),
+			delivery=_parse_enum_list(data.get("delivery", []), _parse_weapon_delivery),
+			magic_type=_parse_enum_list(data.get("magic_type", []), _parse_weapon_magic_type),
+		)
+
+
 @dataclass
 class Archetype:
 	id: str
@@ -80,6 +158,7 @@ class Archetype:
 	resistances: List[DamageType] = field(default_factory=list)
 	immunities: List[DamageType] = field(default_factory=list)
 	vulnerabilities: List[DamageType] = field(default_factory=list)
+	weapon_constraints: WeaponConstraints = field(default_factory=WeaponConstraints)
 	known_spells: List[Spell] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
 	weapons: List[Weapon] = field(default_factory=list)
@@ -94,6 +173,7 @@ class Archetype:
 			"resistances": [damage_type.value for damage_type in self.resistances],
 			"immunities": [damage_type.value for damage_type in self.immunities],
 			"vulnerabilities": [damage_type.value for damage_type in self.vulnerabilities],
+			"weapon_constraints": self.weapon_constraints.to_dict(),
 			"known_spells": [spell.to_dict() for spell in self.known_spells],
 			"known_attacks": [attack.to_dict() for attack in self.known_attacks],
 			"weapons": [weapon.to_dict() for weapon in self.weapons],
@@ -110,6 +190,7 @@ class Archetype:
 			resistances=_parse_damage_type_list(data.get("resistances", [])),
 			immunities=_parse_damage_type_list(data.get("immunities", [])),
 			vulnerabilities=_parse_damage_type_list(data.get("vulnerabilities", [])),
+			weapon_constraints=WeaponConstraints.from_dict(data.get("weapon_constraints", {})),
 			known_spells=_parse_known_spells(data.get("known_spells", [])),
 			known_attacks=_parse_known_attacks(data.get("known_attacks", [])),
 			weapons=_parse_weapons(data.get("weapons", [])),
