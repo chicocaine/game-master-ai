@@ -4,9 +4,10 @@
 <!-- Game Data and Models -->
 ## Game Data and Models
 - [ ] define and implement game models
-- [ ] define JSON game data schemas
+- [ ] define JSON game data schemata
 - [ ] implement game data loaders
 - [ ] implement game data validators
+- [ ] game dungeon implementation (models, schema, loader, validator)
 - [ ] event types and event model implementation
 - [ ] action types and action model implementation
 - [ ] narration model implementation

@@ -20,6 +20,7 @@
 - `name`
 - `description`
 - `type`
+- `damage_type`
 - `value`
 - `hit_modifiers`
 - `status_effects` - ARRAY, NULLABLE
@@ -31,6 +32,7 @@
 - `name`
 - `description`
 - `type`
+- `damage_type`
 - `value`
 - `hit_modifiers`
 - `status_effects` - ARRAY, NULLABLE
@@ -48,8 +50,9 @@
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)
-- `known_spells` (array of spell model)
-- `known_attacks` (array of attack model)
+- `archetype_constraints` (array of archetypes allowed to be paired with this race)
+- `known_spells` (array of spell IDs)
+- `known_attacks` (array of attack IDs)
 
 <!-- Weapon Model -->
 ## Weapon
@@ -57,8 +60,13 @@
 - `id` (str)
 - `name` (str)
 - `description` (str)
-- `type` (weapon type `core/types.py`)
-- `known_attacks` (array of attack model)
+- `proficiency` (weapon proficiency)
+- `handling` (weapon handling)
+- `weight_class` (weapon weight class)
+- `delivery` (weapon delivery)
+- `magic_type` (weapon magic type)
+- `known_attacks` (array of attack IDs)
+- `known_spells` (array of spell IDs)
 
 <!-- Archetype Model -->
 ## Archetype
@@ -71,9 +79,9 @@
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)
-- `known_spells` (array of spell model)
-- `known_attacks` (array of attack model)
-- `weapons` (array of weapon model)
+- `weapon_constraints` { proficiency: [], handling: [], weight_class: [], delivery: [], magic_type: [] } (allowed weapon attributes for the archetype)
+- `known_spells` (array of spell IDs)
+- `known_attacks` (array of attack IDs)
 
 <!-- Entity Model -->
 ## Entity
@@ -83,7 +91,7 @@
 - `description` (str)
 - `race` (race model)
 - `archetype` (archetype model)
-- `weapon` (weapon model)
+- `weapons` (array of weapon models)
 - `hp` (int)
 - `AC` (int)
 - `known attacks`
@@ -91,6 +99,11 @@
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)
+
+<!-- TODO: -->
+<!-- Dungeon Model -->
+
+
 
 <!-- Event Model -->
 ## Event

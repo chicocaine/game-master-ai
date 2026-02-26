@@ -52,10 +52,30 @@
 9. `aoe_debuff`
 10. `aoe_control`
 
-## Weapon Types
-1. `simple_melee`
-2. `simple_ranged`
-3. `martial_melee`
-4. `martial_ranged`
-5. `magic_melee`
-6. `magic_ranged`
+## Weapon Proficiency 
+1. `simple`
+2. `martial`
+3. `exotic`
+4. `arcane`
+5. `divine`
+6. `tech`
+
+## Weapon Handling
+1. `one_handed`
+2. `two_handed`
+3. `versatile`
+
+## Weapon Weight Class
+1. `light`
+2. `heavy`
+
+## Weapon Delivery
+1. `melee`
+2. `ranged`
+3. `versatile`
+
+## Weapon Magic Type
+1. `mundane`
+2. `enchanted`
+3. `focus`
+4. `augment`
