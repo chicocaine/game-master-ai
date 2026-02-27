@@ -1,5 +1,14 @@
 from enum import Enum
 
+class DifficultyType(Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
+
+class RestType(Enum):
+    SHORT = "short"
+    LONG = "long"
+
 class StatusEffectType(Enum):
     ATKMOD = "attack_modifier"
     ACMOD = "ac_modifier"
