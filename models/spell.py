@@ -56,7 +56,8 @@ class Spell:
 	type: SpellType
 	damage_type: DamageType
 	value: str
-	hit_modifiers: int = 0
+	spell_cost: int
+	hit_modifiers: int
 	status_effects: Optional[List[StatusEffect]] = None
 
 	def to_dict(self) -> dict:
@@ -66,6 +67,7 @@ class Spell:
 			"description": self.description,
 			"type": self.type.value,
 			"damage_type": self.damage_type.value,
+			"spell_cost": self.spell_cost,
 			"value": self.value,
 			"hit_modifiers": self.hit_modifiers,
 			"status_effects": (
@@ -83,6 +85,7 @@ class Spell:
 			description=_get_str(data, "description"),
 			type=_parse_spell_type(data.get("type")),
 			damage_type=_parse_damage_type(data.get("damage_type")),
+			spell_cost=_get_int(data.get("spell_cost", 0)),
 			value=_get_str(data, "value"),
 			hit_modifiers=_get_hit_modifier(data),
 			status_effects=_parse_status_effects(data.get("status_effects")),

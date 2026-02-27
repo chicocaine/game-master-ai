@@ -155,6 +155,7 @@ class Archetype:
 	description: str
 	hp_mod: int
 	AC_mod: int
+	spell_slot_mod: int
 	resistances: List[DamageType] = field(default_factory=list)
 	immunities: List[DamageType] = field(default_factory=list)
 	vulnerabilities: List[DamageType] = field(default_factory=list)
@@ -170,6 +171,7 @@ class Archetype:
 			"description": self.description,
 			"hp_mod": self.hp_mod,
 			"AC_mod": self.AC_mod,
+			"spell_slot_mod": self.spell_slot_mod,
 			"resistances": [damage_type.value for damage_type in self.resistances],
 			"immunities": [damage_type.value for damage_type in self.immunities],
 			"vulnerabilities": [damage_type.value for damage_type in self.vulnerabilities],
@@ -187,6 +189,7 @@ class Archetype:
 			description=_get_str(data, "description"),
 			hp_mod=_get_int(data.get("hp_mod", 0)),
 			AC_mod=_get_int(data.get("AC_mod", 0)),
+			spell_slot_mod=_get_int(data.get("spell_slot_mod", 0)),
 			resistances=_parse_damage_type_list(data.get("resistances", [])),
 			immunities=_parse_damage_type_list(data.get("immunities", [])),
 			vulnerabilities=_parse_damage_type_list(data.get("vulnerabilities", [])),

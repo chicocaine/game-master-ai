@@ -73,6 +73,7 @@ class Race:
 	description: str
 	base_hp: int
 	base_AC: int
+	base_spell_slots: int
 	resistances: List[DamageType] = field(default_factory=list)
 	immunities: List[DamageType] = field(default_factory=list)
 	vulnerabilities: List[DamageType] = field(default_factory=list)
@@ -87,6 +88,7 @@ class Race:
 			"description": self.description,
 			"base_hp": self.base_hp,
 			"base_AC": self.base_AC,
+			"base_spell_slots": self.base_spell_slots,
 			"resistances": [damage_type.value for damage_type in self.resistances],
 			"immunities": [damage_type.value for damage_type in self.immunities],
 			"vulnerabilities": [damage_type.value for damage_type in self.vulnerabilities],
@@ -99,6 +101,7 @@ class Race:
 	def from_dict(cls, data: dict) -> "Race":
 		base_hp_value = data.get("base_hp", data.get("hp", 0))
 		base_ac_value = data.get("base_AC", data.get("AC", 0))
+		base_spell_slots_value = data.get("base_spell_slots", data.get("spell_slots", 0))
 
 		return cls(
 			id=_get_str(data, "id"),
@@ -106,6 +109,7 @@ class Race:
 			description=_get_str(data, "description"),
 			base_hp=_get_int(base_hp_value),
 			base_AC=_get_int(base_ac_value),
+			base_spell_slots=_get_int(base_spell_slots_value),
 			resistances=_parse_damage_type_list(data.get("resistances", [])),
 			immunities=_parse_damage_type_list(data.get("immunities", [])),
 			vulnerabilities=_parse_damage_type_list(data.get("vulnerabilities", [])),

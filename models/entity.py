@@ -164,7 +164,11 @@ class Entity:
 	race: Race
 	archetype: Archetype
 	hp: int
+	max_hp: int
+	base_AC: int
 	AC: int
+	spell_slots: int
+	max_spell_slots: int
 	weapons: List[Weapon] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
 	known_spells: List[Spell] = field(default_factory=list)
@@ -177,14 +181,6 @@ class Entity:
 		if self.weapons:
 			return self.weapons[0]
 		return _default_weapon()
-
-	@property
-	def max_hp(self) -> int:
-		return self.race.base_hp + self.archetype.hp_mod
-
-	@property
-	def base_AC(self) -> int:
-		return self.race.base_AC + self.archetype.AC_mod
 
 	@property
 	def merged_attacks(self) -> List[Attack]:
@@ -235,13 +231,15 @@ class Entity:
 			"weapon": self.weapon.to_dict(),
 			"hp": self.hp,
 			"AC": self.AC,
+			"spell_slots": self.spell_slots,
+			"max_hp": self.max_hp,
+			"base_AC": self.base_AC,
+			"max_spell_slots": self.max_spell_slots,
 			"known_attacks": [attack.to_dict() for attack in self.merged_attacks],
 			"known_spells": [spell.to_dict() for spell in self.merged_spells],
 			"resistances": [damage_type.value for damage_type in self.merged_resistances],
 			"immunities": [damage_type.value for damage_type in self.merged_immunities],
 			"vulnerabilities": [damage_type.value for damage_type in self.merged_vulnerabilities],
-			"max_hp": self.max_hp,
-			"base_AC": self.base_AC,
 		}
 
 	@classmethod
@@ -263,6 +261,9 @@ class Entity:
 
 		hp_default = race_model.base_hp + archetype_model.hp_mod
 		ac_default = race_model.base_AC + archetype_model.AC_mod
+		spell_slots_default = race_model.base_spell_slots + archetype_model.spell_slot_mod
+		max_hp_default = hp_default
+		max_spell_slots_default = spell_slots_default
 
 		return cls(
 			id=id,
@@ -272,7 +273,11 @@ class Entity:
 			archetype=archetype_model,
 			weapons=weapons_model,
 			hp=hp_default,
+			max_hp=max_hp_default,
 			AC=ac_default,
+			base_AC=ac_default,
+			spell_slots=spell_slots_default,
+			max_spell_slots=max_spell_slots_default,
 		)
 
 	@classmethod
@@ -287,6 +292,13 @@ class Entity:
 
 		hp_default = race_model.base_hp + archetype_model.hp_mod
 		ac_default = race_model.base_AC + archetype_model.AC_mod
+		spell_slots_default = race_model.base_spell_slots + archetype_model.spell_slot_mod
+		max_hp_default = hp_default
+		max_spell_slots_default = spell_slots_default
+		max_spell_slots_value = data.get(
+			"max_spell_slots",
+			data.get("max_spelll_slots", max_spell_slots_default),
+		)
 
 		return cls(
 			id=_get_str(data, "id"),
@@ -296,7 +308,11 @@ class Entity:
 			archetype=archetype_model,
 			weapons=weapons_model,
 			hp=_get_int(data.get("hp", hp_default)),
+			max_hp=_get_int(data.get("max_hp", max_hp_default)),
+			base_AC=_get_int(data.get("base_AC", ac_default)),
 			AC=_get_int(data.get("AC", ac_default)),
+			spell_slots=_get_int(data.get("spell_slots", spell_slots_default)),
+			max_spell_slots=_get_int(max_spell_slots_value),
 			known_attacks=_parse_known_attacks(data.get("known_attacks", [])),
 			known_spells=_parse_known_spells(data.get("known_spells", [])),
 			resistances=_parse_damage_type_list(data.get("resistances", [])),
