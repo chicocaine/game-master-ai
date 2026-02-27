@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/dungeon.schema.json",
+  "title": "Dungeon",
+  "description": "Schema for serialized Dungeon model objects using enemy ID references inside encounters.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "difficulty",
+    "start_room",
+    "end_room",
+    "rooms"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "difficulty": { "$ref": "#/$defs/difficultyType" },
+    "start_room": { "type": "string", "minLength": 1 },
+    "end_room": { "type": "string", "minLength": 1 },
+    "rooms": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/room" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "difficultyType": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"]
+    },
+    "restType": {
+      "type": "string",
+      "enum": ["short", "long"]
+    },
+    "encounter": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "description",
+        "difficulty",
+        "cleared",
+        "clear_reward",
+        "enemies"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "difficulty": { "$ref": "#/$defs/difficultyType" },
+        "cleared": { "type": "boolean" },
+        "clear_reward": { "type": "integer", "minimum": 0 },
+        "enemies": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "room": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "description",
+        "is_visited",
+        "is_cleared",
+        "is_rested",
+        "connections",
+        "encounters",
+        "allowed_rests"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "is_visited": { "type": "boolean" },
+        "is_cleared": { "type": "boolean" },
+        "is_rested": { "type": "boolean" },
+        "connections": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "encounters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/encounter" }
+        },
+        "allowed_rests": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/restType" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "dungeonCollection": {
+      "type": "array",
+      "items": { "$ref": "#" }
+    }
+  }
+}

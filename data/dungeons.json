@@ -1,0 +1,65 @@
+[
+  {
+    "id": "dgn_ember_catacombs_01",
+    "name": "Ember Catacombs",
+    "description": "A smoldering ruin where cinders still drift through collapsed halls.",
+    "difficulty": "medium",
+    "start_room": "room_entrance_01",
+    "end_room": "room_sanctum_01",
+    "rooms": [
+      {
+        "id": "room_entrance_01",
+        "name": "Collapsed Gate",
+        "description": "Broken stone and ash mark the threshold of the ruins.",
+        "is_visited": false,
+        "is_cleared": false,
+        "is_rested": false,
+        "connections": ["room_forge_01"],
+        "encounters": [
+          {
+            "id": "enc_cinder_scouts_01",
+            "name": "Cinder Scouts",
+            "description": "A small probing force guarding the entrance.",
+            "difficulty": "easy",
+            "cleared": false,
+            "clear_reward": 40,
+            "enemies": ["ent_fireborn_sage_01"]
+          }
+        ],
+        "allowed_rests": []
+      },
+      {
+        "id": "room_forge_01",
+        "name": "Silent Forge",
+        "description": "Cold anvils line the walls while embers pulse under the floor.",
+        "is_visited": false,
+        "is_cleared": false,
+        "is_rested": false,
+        "connections": ["room_entrance_01", "room_sanctum_01"],
+        "encounters": [
+          {
+            "id": "enc_forge_keeper_01",
+            "name": "Forge Keeper",
+            "description": "An elite fireborn defender blocks the inner path.",
+            "difficulty": "medium",
+            "cleared": false,
+            "clear_reward": 85,
+            "enemies": ["ent_fireborn_sage_01"]
+          }
+        ],
+        "allowed_rests": ["short"]
+      },
+      {
+        "id": "room_sanctum_01",
+        "name": "Ash Sanctum",
+        "description": "A circular chamber where the final ward once burned bright.",
+        "is_visited": false,
+        "is_cleared": true,
+        "is_rested": false,
+        "connections": ["room_forge_01"],
+        "encounters": [],
+        "allowed_rests": ["short", "long"]
+      }
+    ]
+  }
+]
