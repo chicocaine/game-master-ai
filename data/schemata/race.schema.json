@@ -10,6 +10,7 @@
     "description",
     "base_hp",
     "base_AC",
+    "base_spell_slots",
     "resistances",
     "immunities",
     "vulnerabilities",
@@ -23,6 +24,7 @@
     "description": { "type": "string" },
     "base_hp": { "type": "integer" },
     "base_AC": { "type": "integer" },
+    "base_spell_slots": { "type": "integer", "minimum": 0 },
     "resistances": {
       "type": "array",
       "items": { "$ref": "#/$defs/damageType" }

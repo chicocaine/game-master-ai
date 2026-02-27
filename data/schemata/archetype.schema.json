@@ -10,6 +10,7 @@
     "description",
     "hp_mod",
     "AC_mod",
+    "spell_slot_mod",
     "resistances",
     "immunities",
     "vulnerabilities",
@@ -24,6 +25,7 @@
     "description": { "type": "string" },
     "hp_mod": { "type": "integer" },
     "AC_mod": { "type": "integer" },
+    "spell_slot_mod": { "type": "integer" },
     "resistances": {
       "type": "array",
       "items": { "$ref": "#/$defs/damageType" }
