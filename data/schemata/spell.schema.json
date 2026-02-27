@@ -10,6 +10,7 @@
     "description",
     "type",
     "damage_type",
+    "spell_cost",
     "value",
     "hit_modifiers",
     "status_effects"
@@ -51,6 +52,7 @@
         "thunder"
       ]
     },
+    "spell_cost": { "type": "integer", "minimum": 0 },
     "value": { "type": "string", "minLength": 1 },
     "hit_modifiers": { "type": "integer" },
     "status_effects": {

@@ -5,6 +5,7 @@
     "description": "Hurl a bolt of fire at one target.",
     "type": "attack",
     "damage_type": "fire",
+    "spell_cost": 1,
     "value": "1d10",
     "hit_modifiers": 3,
     "status_effects": ["se_dot_fire_01"]
@@ -15,6 +16,7 @@
     "description": "Restore health to an ally.",
     "type": "heal",
     "damage_type": "radiant",
+    "spell_cost": 1,
     "value": "1d8+2",
     "hit_modifiers": 0,
     "status_effects": ["se_hot_01"]
@@ -25,6 +27,7 @@
     "description": "A thunderous wave that stuns nearby enemies.",
     "type": "aoe_control",
     "damage_type": "thunder",
+    "spell_cost": 2,
     "value": "1d6",
     "hit_modifiers": 1,
     "status_effects": ["se_ctrl_01"]
