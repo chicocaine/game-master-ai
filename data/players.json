@@ -1,0 +1,21 @@
+[
+  {
+    "id": "ent_human_warrior_01",
+    "name": "Alden Ironward",
+    "description": "A disciplined frontliner trained in swordplay.",
+    "race": "race_human_01",
+    "archetype": "arc_warrior_01",
+    "weapons": ["wpn_longsword_01"],
+    "hp": 16,
+    "max_hp": 16,
+    "base_AC": 13,
+    "AC": 13,
+    "spell_slots": 1,
+    "max_spell_slots": 1,
+    "known_attacks": [],
+    "known_spells": [],
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  }
+]

@@ -1,0 +1,21 @@
+[
+  {
+    "id": "ent_fireborn_sage_01",
+    "name": "Cinder Vale",
+    "description": "A fireborn arcane tactician with elemental control.",
+    "race": "race_fireborn_01",
+    "archetype": "arc_sage_01",
+    "weapons": ["wpn_staff_01"],
+    "hp": 11,
+    "max_hp": 11,
+    "base_AC": 10,
+    "AC": 10,
+    "spell_slots": 4,
+    "max_spell_slots": 4,
+    "known_attacks": [],
+    "known_spells": [],
+    "resistances": [],
+    "immunities": [],
+    "vulnerabilities": []
+  }
+]
