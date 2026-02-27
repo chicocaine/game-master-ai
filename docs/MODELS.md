@@ -33,6 +33,7 @@
 - `description`
 - `type`
 - `damage_type`
+- `spell_cost`
 - `value`
 - `hit_modifiers`
 - `status_effects` - ARRAY, NULLABLE
@@ -47,6 +48,7 @@
 - `description` (str)
 - `base_hp` (int)
 - `base_AC` (int)
+- `base_spell_slots` (int) 
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)
@@ -76,6 +78,7 @@
 - `description`(str)
 - `hp_mod` (int)
 - `AC_mod` (int)
+- `spell_slot_mod` (int) 
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)
@@ -94,14 +97,57 @@
 - `weapons` (array of weapon models)
 - `hp` (int)
 - `AC` (int)
+- `spell_slots` (int)
+- `max_hp` (int)
+- `max_spell_slots` (int)
 - `known attacks`
 - `known spells`    
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)
 
+## Player
+> Entity specialization for player-controlled instances
+- all `Entity` attributes
+- `player_instance_id` (str)
+
+## Enemy
+> Entity specialization for enemy-controlled instances
+- all `Entity` attributes
+- `enemy_instance_id` (str)
+
 <!-- TODO: -->
-<!-- Dungeon Model -->
+## Dungeon
+> Node-based game environment made up of connected rooms
+
+### Encounter
+- `id` (str)
+- `name` (str)
+- `description` (str)
+- `difficulty` (difficulty type)
+- `cleared` (bool)
+- `clear_reward` (int)
+- `enemies` (array of enemy models; stored as enemy IDs in JSON)
+
+### Room
+- `id` (str)
+- `name` (str)
+- `description` (str)
+- `is_visited` (bool)
+- `is_cleared` (bool)
+- `is_rested` (bool)
+- `connections` (array of room IDs)
+- `encounters` (array of encounter models)
+- `allowed_rests` (array of rest types)
+
+### Dungeon
+- `id` (str)
+- `name` (str)
+- `description` (str)
+- `difficulty` (difficulty type)
+- `start_room` (room ID)
+- `end_room` (room ID)
+- `rooms` (array of room models)
 
 
 
