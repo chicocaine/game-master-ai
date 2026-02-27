@@ -3,7 +3,17 @@ from pathlib import Path
 
 import pytest
 
-from util.dataloader import create_entity_from_ids, load_catalog
+from util.data_loader import (
+    load_dungeon_templates,
+    load_enemy_templates,
+    load_catalog,
+    load_player_templates,
+)
+from util.entity_factory import (
+    create_enemy_from_ids,
+    create_entity_from_ids,
+    create_player_from_ids,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -92,3 +102,291 @@ def test_load_catalog_raises_on_unknown_reference(tmp_path: Path):
 
     with pytest.raises(KeyError, match="se_missing_999"):
         load_catalog(data_copy)
+
+
+def test_create_player_from_ids_sets_instance_id_and_defaults():
+    player = create_player_from_ids(
+        entity_id="ent_player_test_01",
+        name="Test Player",
+        description="Unit test player",
+        race_id="race_human_01",
+        archetype_id="arc_warrior_01",
+        weapon_ids=["wpn_longsword_01"],
+        player_instance_id="player_inst_01",
+        data_dir=DATA_DIR,
+    )
+
+    assert player.player_instance_id == "player_inst_01"
+    assert player.hp == 16
+    assert player.AC == 13
+    assert [weapon.id for weapon in player.weapons] == ["wpn_longsword_01"]
+
+
+def test_create_enemy_from_ids_sets_instance_id_and_defaults():
+    enemy = create_enemy_from_ids(
+        entity_id="ent_enemy_test_01",
+        name="Test Enemy",
+        description="Unit test enemy",
+        race_id="race_human_01",
+        archetype_id="arc_warrior_01",
+        weapon_ids=["wpn_longsword_01"],
+        enemy_instance_id="enemy_inst_01",
+        data_dir=DATA_DIR,
+    )
+
+    assert enemy.enemy_instance_id == "enemy_inst_01"
+    assert enemy.hp == 16
+    assert enemy.AC == 13
+    assert [weapon.id for weapon in enemy.weapons] == ["wpn_longsword_01"]
+
+
+def test_load_player_templates_returns_entity_records_without_instance_ids():
+    players = load_player_templates(DATA_DIR)
+
+    assert "ent_human_warrior_01" in players
+    player_template = players["ent_human_warrior_01"]
+    assert player_template.id == "ent_human_warrior_01"
+    assert player_template.race.id == "race_human_01"
+    assert player_template.archetype.id == "arc_warrior_01"
+    assert [weapon.id for weapon in player_template.weapons] == ["wpn_longsword_01"]
+    assert not hasattr(player_template, "player_instance_id")
+
+
+def test_load_enemy_templates_returns_entity_records_without_instance_ids():
+    enemies = load_enemy_templates(DATA_DIR)
+
+    assert "ent_fireborn_sage_01" in enemies
+    enemy_template = enemies["ent_fireborn_sage_01"]
+    assert enemy_template.id == "ent_fireborn_sage_01"
+    assert enemy_template.race.id == "race_fireborn_01"
+    assert enemy_template.archetype.id == "arc_sage_01"
+    assert [weapon.id for weapon in enemy_template.weapons] == ["wpn_staff_01"]
+    assert not hasattr(enemy_template, "enemy_instance_id")
+
+
+def test_load_player_templates_raises_on_unknown_reference(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    players = json.loads((data_copy / "players.json").read_text(encoding="utf-8"))
+    players[0]["race"] = "race_missing_999"
+    (data_copy / "players.json").write_text(json.dumps(players, indent=2), encoding="utf-8")
+
+    with pytest.raises(KeyError, match="Unknown race id 'race_missing_999'"):
+        load_player_templates(data_copy)
+
+
+def test_load_dungeon_templates_resolves_enemy_references():
+    dungeons = load_dungeon_templates(DATA_DIR)
+
+    assert "dgn_ember_catacombs_01" in dungeons
+    dungeon = dungeons["dgn_ember_catacombs_01"]
+    assert dungeon.start_room == "room_entrance_01"
+    assert len(dungeon.rooms) == 3
+
+    first_encounter = dungeon.rooms[0].encounters[0]
+    assert [enemy.id for enemy in first_encounter.enemies] == ["ent_fireborn_sage_01"]
+
+
+def test_load_dungeon_templates_raises_on_unknown_enemy_reference(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    dungeons = json.loads((data_copy / "dungeons.json").read_text(encoding="utf-8"))
+    dungeons[0]["rooms"][0]["encounters"][0]["enemies"] = ["ent_missing_999"]
+    (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
+
+    with pytest.raises(KeyError, match="Unknown enemy id 'ent_missing_999'"):
+        load_dungeon_templates(data_copy)
+
+
+def test_load_dungeon_templates_raises_on_unknown_room_connection(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    dungeons = json.loads((data_copy / "dungeons.json").read_text(encoding="utf-8"))
+    dungeons[0]["rooms"][0]["connections"].append("room_missing_999")
+    (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="references unknown connection 'room_missing_999'"):
+        load_dungeon_templates(data_copy)
+
+
+def test_load_dungeon_templates_raises_on_unreachable_end_room(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    dungeons = json.loads((data_copy / "dungeons.json").read_text(encoding="utf-8"))
+    dungeons[0]["rooms"][1]["connections"] = ["room_entrance_01"]
+    (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="is not reachable from start_room"):
+        load_dungeon_templates(data_copy)
+
+
+def test_load_dungeon_templates_raises_on_unknown_start_room(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    dungeons = json.loads((data_copy / "dungeons.json").read_text(encoding="utf-8"))
+    dungeons[0]["start_room"] = "room_missing_999"
+    (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="unknown start_room 'room_missing_999'"):
+        load_dungeon_templates(data_copy)
+
+
+def test_load_catalog_raises_on_schema_violation(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    # Schema should reject additional properties.
+    attacks = json.loads((data_copy / "attacks.json").read_text(encoding="utf-8"))
+    attacks[0]["unexpected_field"] = "boom"
+    (data_copy / "attacks.json").write_text(json.dumps(attacks, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Schema validation failed for 'attacks.json'"):
+        load_catalog(data_copy)
+
+
+def test_load_player_templates_raises_on_entity_schema_violation(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    players = json.loads((data_copy / "players.json").read_text(encoding="utf-8"))
+    players[0].pop("name")
+    (data_copy / "players.json").write_text(json.dumps(players, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Schema validation failed for 'players.json'"):
+        load_player_templates(data_copy)
+
+
+def test_load_dungeon_templates_raises_on_schema_violation(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+        "dungeons.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    dungeons = json.loads((data_copy / "dungeons.json").read_text(encoding="utf-8"))
+    dungeons[0].pop("start_room")
+    (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Schema validation failed for 'dungeons.json'"):
+        load_dungeon_templates(data_copy)

@@ -78,7 +78,11 @@ def test_from_dict_accepts_legacy_single_weapon_field():
     assert [weapon.id for weapon in entity.weapons] == ["wpn_legacy_01"]
     assert entity.weapon.id == "wpn_legacy_01"
     assert entity.hp == 12
+    assert entity.max_hp == 12
+    assert entity.base_AC == 12
     assert entity.AC == 12
+    assert entity.spell_slots == 0
+    assert entity.max_spell_slots == 0
 
 
 def test_from_dict_prefers_weapons_list_when_present():
