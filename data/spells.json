@@ -20,7 +20,6 @@
     "spell_cost": 1,
     "parameters": {
       "magnitude": "1d8+2",
-      "damage_types": ["radiant"],
       "hit_modifiers": 0,
       "applied_status_effects": [["se_hot_01", 3]]
     }
@@ -38,4 +37,17 @@
       "applied_status_effects": [["se_ctrl_01", 1]]
     }
   }
+  ,
+    {
+      "id": "spl_heal_area_01",
+      "name": "Healing Aura",
+      "description": "Restore health to all nearby allies.",
+      "type": "aoe_heal",
+      "spell_cost": 3,
+      "parameters": {
+        "magnitude": "1d6+1",
+        "hit_modifiers": 0,
+        "applied_status_effects": [["se_hot_01", 2]]
+      }
+    }
 ]
