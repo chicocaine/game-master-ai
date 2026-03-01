@@ -106,3 +106,25 @@ def test_from_dict_uses_empty_weapons_when_none_provided():
 
     assert entity.weapons == []
     assert entity.weapon.id == ""
+
+
+def test_from_dict_round_trip_includes_status_effects():
+    payload = _base_entity_payload()
+    payload["active_status_effects"] = [
+        {
+            "status_effect": {
+                "id": "se_hot_test_01",
+                "name": "Test Regen",
+                "description": "Recover hp over time",
+                "type": "HoT",
+                "parameters": {"value": 1},
+            },
+            "duration": 2,
+        }
+    ]
+
+    entity = Entity.from_dict(payload)
+
+    assert [status_effect.id for status_effect in entity.active_status_effects] == ["se_hot_test_01"]
+    serialized = entity.to_dict()
+    assert serialized["active_status_effects"] == [["se_hot_test_01", 2]]

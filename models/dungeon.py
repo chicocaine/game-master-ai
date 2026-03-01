@@ -194,3 +194,7 @@ class Dungeon:
             end_room=_get_str(data, "end_room"),
             rooms=_parse_rooms(data.get("rooms", [])),
         )
+
+# add properties:
+# 1. visited_rooms
+# 2. cleared_rooms

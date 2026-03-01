@@ -13,6 +13,7 @@ from models.attack import Attack
 from models.archetype import Archetype
 from models.race import Race
 from models.spell import Spell
+from models.status_effect import StatusEffectInstance
 from models.weapon import Weapon
 
 
@@ -116,6 +117,19 @@ def _parse_known_spells(value: Any) -> List[Spell]:
 	return spells
 
 
+def _parse_active_status_effects(value: Any) -> List[StatusEffectInstance]:
+	if not isinstance(value, list):
+		return []
+
+	effects: List[StatusEffectInstance] = []
+	for item in value:
+		if isinstance(item, StatusEffectInstance):
+			effects.append(item)
+		elif isinstance(item, dict):
+			effects.append(StatusEffectInstance.from_dict(item))
+	return effects
+
+
 def _dedupe_by_id(items: List[Any]) -> List[Any]:
 	seen_ids: Dict[str, bool] = {}
 	result: List[Any] = []
@@ -169,6 +183,7 @@ class Entity:
 	AC: int
 	spell_slots: int
 	max_spell_slots: int
+	active_status_effects: List[StatusEffectInstance] = field(default_factory=list)
 	weapons: List[Weapon] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
 	known_spells: List[Spell] = field(default_factory=list)
@@ -235,6 +250,9 @@ class Entity:
 			"max_hp": self.max_hp,
 			"base_AC": self.base_AC,
 			"max_spell_slots": self.max_spell_slots,
+			"active_status_effects": [
+				status_effect.to_ref() for status_effect in self.active_status_effects
+			],
 			"known_attacks": [attack.to_dict() for attack in self.merged_attacks],
 			"known_spells": [spell.to_dict() for spell in self.merged_spells],
 			"resistances": [damage_type.value for damage_type in self.merged_resistances],
@@ -251,10 +269,12 @@ class Entity:
 		race: Any,
 		archetype: Any,
 		weapons: Any,
+		active_status_effects: Any = None,
 	) -> "Entity":
 		race_model = _parse_race(race)
 		archetype_model = _parse_archetype(archetype)
 		weapons_model = _parse_weapons(weapons)
+		active_status_effects_model = _parse_active_status_effects(active_status_effects)
 
 		_validate_archetype_constraint(race_model, archetype_model)
 		_validate_weapon_constraints(archetype_model, weapons_model)
@@ -278,6 +298,7 @@ class Entity:
 			base_AC=ac_default,
 			spell_slots=spell_slots_default,
 			max_spell_slots=max_spell_slots_default,
+			active_status_effects=active_status_effects_model,
 		)
 
 	@classmethod
@@ -313,6 +334,9 @@ class Entity:
 			AC=_get_int(data.get("AC", ac_default)),
 			spell_slots=_get_int(data.get("spell_slots", spell_slots_default)),
 			max_spell_slots=_get_int(max_spell_slots_value),
+			active_status_effects=_parse_active_status_effects(
+				data.get("active_status_effects", data.get("status_effects", []))
+			),
 			known_attacks=_parse_known_attacks(data.get("known_attacks", [])),
 			known_spells=_parse_known_spells(data.get("known_spells", [])),
 			resistances=_parse_damage_type_list(data.get("resistances", [])),
@@ -328,6 +352,7 @@ def create_entity(
 	race: Any,
 	archetype: Any,
 	weapons: Any,
+	active_status_effects: Any = None,
 ) -> Entity:
 	return Entity.create(
 		id=id,
@@ -336,4 +361,5 @@ def create_entity(
 		race=race,
 		archetype=archetype,
 		weapons=weapons,
+		active_status_effects=active_status_effects,
 	)

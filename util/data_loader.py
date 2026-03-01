@@ -10,7 +10,7 @@ from models.entity import Entity
 from models.enemy import Enemy
 from models.race import Race
 from models.spell import Spell
-from models.status_effect import StatusEffect
+from models.status_effect import StatusEffectDefinition, StatusEffectInstance
 from models.weapon import Weapon
 from util.data_validator import validate_dungeon
 from util.json_schema_validator import validate_model_data_files
@@ -54,9 +54,42 @@ def _resolve_ids(
 	return resolved
 
 
+def _resolve_status_effect_instances(
+	references: Optional[List[list]],
+	index: Dict[str, StatusEffectDefinition],
+	owner_id: str,
+	field_name: str,
+) -> List[StatusEffectInstance]:
+	if not references:
+		return []
+
+	resolved: List[StatusEffectInstance] = []
+	for reference in references:
+		if not isinstance(reference, list) or len(reference) != 2:
+			raise ValueError(
+				f"Invalid status effect reference in '{owner_id}.{field_name}': expected [status_effect_id, duration]"
+			)
+
+		status_effect_id = str(reference[0])
+		duration = int(reference[1])
+		if status_effect_id not in index:
+			raise KeyError(
+				f"Unknown status_effect id '{status_effect_id}' referenced by '{owner_id}'"
+			)
+
+		resolved.append(
+			StatusEffectInstance(
+				status_effect=index[status_effect_id],
+				duration=duration,
+			)
+		)
+
+	return resolved
+
+
 @dataclass
 class DataCatalog:
-	status_effects: Dict[str, StatusEffect]
+	status_effects: Dict[str, StatusEffectDefinition]
 	attacks: Dict[str, Attack]
 	spells: Dict[str, Spell]
 	weapons: Dict[str, Weapon]
@@ -85,6 +118,12 @@ def _resolve_entity_payload(raw: dict, catalog: DataCatalog) -> dict:
 	)
 	payload["known_spells"] = _resolve_ids(
 		raw.get("known_spells", []), catalog.spells, "spell", entity_id
+	)
+	payload["active_status_effects"] = _resolve_status_effect_instances(
+		raw.get("active_status_effects", raw.get("status_effects", [])),
+		catalog.status_effects,
+		entity_id,
+		"active_status_effects",
 	)
 
 	return payload
@@ -133,39 +172,47 @@ def load_catalog(data_dir: Union[str, Path]) -> DataCatalog:
 	race_data = _index_by_id(race_rows, "races.json")
 	archetype_data = _index_by_id(archetype_rows, "archetypes.json")
 
-	status_effects: Dict[str, StatusEffect] = {
-		item_id: StatusEffect.from_dict(item)
+	status_effects: Dict[str, StatusEffectDefinition] = {
+		item_id: StatusEffectDefinition.from_dict(item)
 		for item_id, item in status_effect_data.items()
 	}
 
 	attacks: Dict[str, Attack] = {}
 	for item_id, raw in attack_data.items():
-		resolved_effects = None
-		if raw.get("status_effects") is not None:
-			resolved_effects = _resolve_ids(
-				raw.get("status_effects", []),
-				status_effects,
-				"status_effect",
-				item_id,
-			)
+		attack_parameters = raw.get("parameters", {})
+		if not isinstance(attack_parameters, dict):
+			attack_parameters = {}
+
+		resolved_effects = _resolve_status_effect_instances(
+			attack_parameters.get("applied_status_effects", []),
+			status_effects,
+			item_id,
+			"applied_status_effects",
+		)
 
 		payload = dict(raw)
-		payload["status_effects"] = resolved_effects
+		payload_parameters = dict(attack_parameters)
+		payload_parameters["applied_status_effects"] = resolved_effects
+		payload["parameters"] = payload_parameters
 		attacks[item_id] = Attack.from_dict(payload)
 
 	spells: Dict[str, Spell] = {}
 	for item_id, raw in spell_data.items():
-		resolved_effects = None
-		if raw.get("status_effects") is not None:
-			resolved_effects = _resolve_ids(
-				raw.get("status_effects", []),
-				status_effects,
-				"status_effect",
-				item_id,
-			)
+		spell_parameters = raw.get("parameters", {})
+		if not isinstance(spell_parameters, dict):
+			spell_parameters = {}
+
+		resolved_effects = _resolve_status_effect_instances(
+			spell_parameters.get("applied_status_effects", []),
+			status_effects,
+			item_id,
+			"applied_status_effects",
+		)
 
 		payload = dict(raw)
-		payload["status_effects"] = resolved_effects
+		payload_parameters = dict(spell_parameters)
+		payload_parameters["applied_status_effects"] = resolved_effects
+		payload["parameters"] = payload_parameters
 		spells[item_id] = Spell.from_dict(payload)
 
 	weapons: Dict[str, Weapon] = {}

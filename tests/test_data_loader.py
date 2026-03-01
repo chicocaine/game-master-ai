@@ -24,8 +24,7 @@ def test_load_catalog_resolves_id_references():
     catalog = load_catalog(DATA_DIR)
 
     fire_arrow = catalog.attacks["atk_fire_arrow_01"]
-    assert fire_arrow.status_effects is not None
-    assert [effect.id for effect in fire_arrow.status_effects] == ["se_dot_fire_01"]
+    assert [effect.id for effect in fire_arrow.applied_status_effects] == ["se_dot_fire_01"]
 
     staff = catalog.weapons["wpn_staff_01"]
     assert [spell.id for spell in staff.known_spells] == ["spl_fire_bolt_01", "spl_heal_touch_01"]
@@ -97,7 +96,7 @@ def test_load_catalog_raises_on_unknown_reference(tmp_path: Path):
         target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
 
     attacks = json.loads((data_copy / "attacks.json").read_text(encoding="utf-8"))
-    attacks[1]["status_effects"] = ["se_missing_999"]
+    attacks[1]["parameters"]["applied_status_effects"] = [["se_missing_999", 3]]
     (data_copy / "attacks.json").write_text(json.dumps(attacks, indent=2), encoding="utf-8")
 
     with pytest.raises(KeyError, match="se_missing_999"):
