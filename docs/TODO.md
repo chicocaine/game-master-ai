@@ -32,7 +32,7 @@
 <!-- LLM Integration  -->
 ## LLM Integration
 - [ ] llm client
-- [ ] state summary
+- [ ] state summary and context file
 - [ ] llm query-action-event_narration loop
 - [ ] action mapping
 - [ ] narration
