@@ -12,6 +12,7 @@
     "AC": 10,
     "spell_slots": 4,
     "max_spell_slots": 4,
+    "active_status_effects": [],
     "known_attacks": [],
     "known_spells": [],
     "resistances": [],

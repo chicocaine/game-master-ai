@@ -9,10 +9,7 @@
     "name",
     "description",
     "type",
-    "damage_type",
-    "value",
-    "hit_modifiers",
-    "status_effects"
+    "parameters"
   ],
   "properties": {
     "id": { "type": "string", "minLength": 1 },
@@ -29,7 +26,32 @@
         "aoe_unarmed"
       ]
     },
-    "damage_type": {
+    "parameters": {
+      "type": "object",
+      "required": [
+        "damage_types",
+        "magnitude",
+        "applied_status_effects",
+        "hit_modifiers"
+      ],
+      "properties": {
+        "damage_types": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/damageType" }
+        },
+        "magnitude": { "type": "string", "minLength": 1 },
+        "applied_status_effects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/statusEffectReference" }
+        },
+        "hit_modifiers": { "type": "integer" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "damageType": {
       "type": "string",
       "enum": [
         "acid",
@@ -47,20 +69,16 @@
         "thunder"
       ]
     },
-    "value": { "type": "string", "minLength": 1 },
-    "hit_modifiers": { "type": "integer" },
-    "status_effects": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 }
-        }
-      ]
-    }
-  },
-  "additionalProperties": false,
-  "$defs": {
+    "statusEffectReference": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "string", "minLength": 1 },
+        { "type": "integer" }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "items": false
+    },
     "attackCollection": {
       "type": "array",
       "items": { "$ref": "#" }

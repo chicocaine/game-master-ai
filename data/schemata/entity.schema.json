@@ -17,6 +17,7 @@
     "AC",
     "spell_slots",
     "max_spell_slots",
+    "active_status_effects",
     "known_attacks",
     "known_spells",
     "resistances",
@@ -39,6 +40,10 @@
     "AC": { "type": "integer" },
     "spell_slots": { "type": "integer", "minimum": 0 },
     "max_spell_slots": { "type": "integer", "minimum": 0 },
+    "active_status_effects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/statusEffectReference" }
+    },
     "known_attacks": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
@@ -62,6 +67,16 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "statusEffectReference": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "string", "minLength": 1 },
+        { "type": "integer" }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "items": false
+    },
     "damageType": {
       "type": "string",
       "enum": [

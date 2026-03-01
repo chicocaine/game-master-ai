@@ -9,11 +9,8 @@
     "name",
     "description",
     "type",
-    "damage_type",
     "spell_cost",
-    "value",
-    "hit_modifiers",
-    "status_effects"
+    "parameters"
   ],
   "properties": {
     "id": { "type": "string", "minLength": 1 },
@@ -34,7 +31,33 @@
         "aoe_control"
       ]
     },
-    "damage_type": {
+    "spell_cost": { "type": "integer", "minimum": 0 },
+    "parameters": {
+      "type": "object",
+      "required": [
+        "magnitude",
+        "damage_types",
+        "applied_status_effects",
+        "hit_modifiers"
+      ],
+      "properties": {
+        "magnitude": { "type": "string", "minLength": 1 },
+        "damage_types": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/damageType" }
+        },
+        "applied_status_effects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/statusEffectReference" }
+        },
+        "hit_modifiers": { "type": "integer" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "damageType": {
       "type": "string",
       "enum": [
         "acid",
@@ -52,21 +75,16 @@
         "thunder"
       ]
     },
-    "spell_cost": { "type": "integer", "minimum": 0 },
-    "value": { "type": "string", "minLength": 1 },
-    "hit_modifiers": { "type": "integer" },
-    "status_effects": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 }
-        }
-      ]
-    }
-  },
-  "additionalProperties": false,
-  "$defs": {
+    "statusEffectReference": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "string", "minLength": 1 },
+        { "type": "integer" }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "items": false
+    },
     "spellCollection": {
       "type": "array",
       "items": { "$ref": "#" }

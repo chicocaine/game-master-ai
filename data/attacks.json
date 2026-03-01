@@ -4,29 +4,35 @@
     "name": "Longsword Slash",
     "description": "A precise melee slash with a steel blade.",
     "type": "melee",
-    "damage_type": "slashing",
-    "value": "1d8+3",
-    "hit_modifiers": 2,
-    "status_effects": null
+    "parameters": {
+      "damage_types": ["slashing"],
+      "magnitude": "1d8+3",
+      "hit_modifiers": 2,
+      "applied_status_effects": []
+    }
   },
   {
     "id": "atk_fire_arrow_01",
     "name": "Fire Arrow",
     "description": "A ranged attack that ignites the target.",
     "type": "ranged",
-    "damage_type": "piercing",
-    "value": "1d6+2",
-    "hit_modifiers": 1,
-    "status_effects": ["se_dot_fire_01"]
+    "parameters": {
+      "damage_types": ["piercing"],
+      "magnitude": "1d6+2",
+      "hit_modifiers": 1,
+      "applied_status_effects": [["se_dot_fire_01", 3]]
+    }
   },
   {
     "id": "atk_shield_bash_01",
     "name": "Shield Bash",
     "description": "A forceful bash that can stun.",
     "type": "unarmed",
-    "damage_type": "bludgeoning",
-    "value": "1d4+1",
-    "hit_modifiers": 0,
-    "status_effects": ["se_ctrl_01"]
+    "parameters": {
+      "damage_types": ["bludgeoning"],
+      "magnitude": "1d4+1",
+      "hit_modifiers": 0,
+      "applied_status_effects": [["se_ctrl_01", 1]]
+    }
   }
 ]
