@@ -6,7 +6,7 @@ from models.entity import Entity, create_entity
 from models.player import Player, create_player
 from models.race import Race
 from models.spell import Spell
-from models.status_effect import StatusEffect
+from models.status_effect import StatusEffectDefinition, StatusEffectInstance
 from models.weapon import Weapon
 
 
@@ -21,7 +21,8 @@ __all__ = [
 	"Race",
 	"Room",
 	"Spell",
-	"StatusEffect",
+	"StatusEffectDefinition",
+	"StatusEffectInstance",
 	"Weapon",
 	"create_enemy",
 	"create_entity",
