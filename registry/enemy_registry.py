@@ -6,8 +6,8 @@ from models.entity import Entity
 from registry.common import load_indexed_rows
 from registry.entity_registry import load_entity_registry, resolve_entity_payload
 
-if False:
-	from registry.catalog_registry import DataCatalog
+
+from registry.catalog_registry import DataCatalog
 
 
 def load_enemy_registry(

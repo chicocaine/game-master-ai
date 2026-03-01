@@ -4,8 +4,8 @@ from typing import Dict, Optional, Union
 from models.entity import Entity
 from registry.common import resolve_ids, resolve_status_effect_instances
 
-if False:
-    from registry.catalog_registry import DataCatalog
+
+from registry.catalog_registry import DataCatalog
 
 
 def resolve_entity_payload(raw: dict, catalog: "DataCatalog") -> dict:

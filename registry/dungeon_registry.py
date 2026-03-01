@@ -7,8 +7,8 @@ from registry.common import index_by_id, load_json, resolve_ids, validate_files
 from registry.enemy_registry import load_enemy_model_registry
 from util.data_validator import validate_dungeon
 
-if False:
-	from registry.catalog_registry import DataCatalog
+
+from registry.catalog_registry import DataCatalog
 
 
 def load_dungeon_registry(
