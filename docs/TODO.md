@@ -8,9 +8,9 @@
 - [x] implement game data loaders
 - [x] implement game data validators
 - [x] game dungeon implementation (models, schema, loader, validator)
-- [ ] event types and event model implementation
-- [ ] action types and action model implementation
-- [ ] narration model implementation
+- [x] event types and event model implementation
+- [x] action types and action model implementation
+- [x] narration model implementation
 
 <!-- Game Helpers and Util -->
 ## Game Helpers and Util
