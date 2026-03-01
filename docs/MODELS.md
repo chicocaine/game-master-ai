@@ -6,12 +6,17 @@
 <!-- Status Effect Model -->
 ## Status Effect
 > Affects entity stats
-### Attributes
+### StatusEffectDefinition Attributes
 - `id`
 - `name`
 - `description`
 - `type`
 - `parameters` - based on status effect type
+
+### StatusEffectInstance Attributes
+- `status_effect` (`StatusEffectDefinition`)
+- `duration` (int)
+- serialized ref format: `[status_effect_id (str), duration (int)]`
 
 <!-- Attack Model -->
 ## Attack
@@ -23,7 +28,7 @@
 - `damage_type`
 - `value`
 - `hit_modifiers`
-- `status_effects` - ARRAY, NULLABLE
+- `applied_status_effects` - ARRAY (non-optional), each item is `[status_effect_id, duration]`
 
 <!-- Spell Model -->
 ## Spell
@@ -36,7 +41,7 @@
 - `spell_cost`
 - `value`
 - `hit_modifiers`
-- `status_effects` - ARRAY, NULLABLE
+- `applied_status_effects` - ARRAY (non-optional), each item is `[status_effect_id, duration]`
 
 
 <!-- Race Model -->
@@ -100,8 +105,9 @@
 - `spell_slots` (int)
 - `max_hp` (int)
 - `max_spell_slots` (int)
-- `known attacks`
-- `known spells`    
+- `active_status_effects` (array of `[status_effect_id, duration]`)
+- `known_attacks`
+- `known_spells`    
 - `resistances` (array of damage types)
 - `immunities` (array of damage types)
 - `vulnerabilities` (array of damage types)

@@ -23,14 +23,13 @@
 5. `control`
 6. `immunity`
 7. `resistance`
-8. `vulnerability`
+8. `vulnerable`
 
 ## Status Effect Control Types
-1. `stun`
-2. `sleep`
+1. `stunned`
+2. `asleep`
 3. `restrained`
 4. `silenced`
-5. `taunted`
 
 ## Attack Types
 1. `melee`

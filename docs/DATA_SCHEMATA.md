@@ -18,21 +18,24 @@
 
 ## StatusEffect
 - Schema file: `data/schemata/status_effect.schema.json`
-- Describes serialized status effect objects from `models/status_effect.py`
+- Describes serialized `StatusEffectDefinition` objects from `models/status_effect.py`
 - Includes a root schema for a single status effect
 - Includes `$defs.statusEffectCollection` for arrays
+- `duration` is not part of status effect definition storage
 
 ## Attack
 - Schema file: `data/schemata/attack.schema.json`
 - Describes serialized attack objects from `models/attack.py`
 - Includes top-level `damage_type`
-- Supports nullable `status_effects` or an array of `status_effect` IDs
+- Uses required `applied_status_effects` array
+- Each status effect reference is a tuple: `[status_effect_id, duration]`
 
 ## Spell
 - Schema file: `data/schemata/spell.schema.json`
 - Describes serialized spell objects from `models/spell.py`
 - Includes top-level `damage_type`
-- Supports nullable `status_effects` or an array of `status_effect` IDs
+- Uses required `applied_status_effects` array
+- Each status effect reference is a tuple: `[status_effect_id, duration]`
 
 ## Race
 - Schema file: `data/schemata/race.schema.json`
@@ -53,6 +56,7 @@
 ## Entity Storage Collections
 - Schema file: `data/schemata/entity.schema.json`
 - `data/players.json` and `data/enemies.json` both store entity-shaped records
+- Entity status effects are stored in `active_status_effects` as `[status_effect_id, duration]` tuples
 - Storage remains schema-compatible `Entity` data (no runtime instance IDs)
 - Runtime conversion to `Player` / `Enemy` occurs when records are loaded into game state
 
