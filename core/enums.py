@@ -67,6 +67,31 @@ class EventType(Enum):
     REWARD_GRANTED = "reward_granted"
     PROGRESSION_UPDATED = "progression_updated"
 
+class ActionType(Enum):
+    # global actions (callable in every game mode)
+    ABANDON = "abandon"
+    QUERY = "query"
+    CONVERSE = "converse"
+
+    # exploration actions
+    MOVE = "move"
+    EXPLORE = "explore"
+    REST = "rest"
+
+    # encounter actions
+    ATTACK = "attack"
+    CAST_SPELL = "cast_spell"
+    END_TURN = "end_turn" 
+
+    # pre-game actions
+    START = "start"
+    CREATE_PLAYER = "create_player" # creates a player and adds to the party
+    REMOVE_PLAYER = "remove_player" # removes a player from the party
+    CHOOSE_DUNGEON = "choose_dungeon" # chooses a dungeon to play
+
+    # post-game actions
+    FINISH = "finish" # loops game state back to pre-game
+
 class RestType(Enum):
     SHORT = "short"
     LONG = "long"
