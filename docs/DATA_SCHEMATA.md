@@ -61,8 +61,8 @@
 - Runtime conversion to `Player` / `Enemy` occurs when records are loaded into game state
 
 Resolver entrypoints for ID-based storage:
-- `util/data_loader.py -> load_player_templates(...)`
-- `util/data_loader.py -> load_enemy_templates(...)`
+- `registry/player_registry.py -> load_player_registry(...)`
+- `registry/enemy_registry.py -> load_enemy_registry(...)`
 - `util/entity_factory.py -> create_entity_from_ids(...)`
 - `util/entity_factory.py -> create_player_from_ids(...)`
 - `util/entity_factory.py -> create_enemy_from_ids(...)`
@@ -74,7 +74,7 @@ Resolver entrypoints for ID-based storage:
 - Uses enemy ID references inside each encounter `enemies` array
 
 Resolver entrypoint for dungeon storage:
-- `util/data_loader.py -> load_dungeon_templates(...)`
+- `registry/dungeon_registry.py -> load_dungeon_registry(...)`
 
 Dungeon integrity validation (separate from data loading):
 - `util/data_validator.py -> validate_dungeon(...)`
