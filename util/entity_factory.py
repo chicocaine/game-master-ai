@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, TypeVar, Union
 from models.entity import Entity, create_entity
 from models.enemy import Enemy, create_enemy
 from models.player import Player, create_player
-from util.data_loader import DataCatalog, load_catalog
+from registry.catalog_registry import DataCatalog, load_catalog_registry
 
 
 TModel = TypeVar("TModel")
@@ -53,7 +53,7 @@ def create_entity_from_ids(
 	weapon_ids: List[str],
 	data_dir: Union[str, Path] = "data",
 ) -> Entity:
-	catalog = load_catalog(data_dir)
+	catalog = load_catalog_registry(data_dir)
 	race, archetype, weapons = _resolve_catalog_entry(
 		catalog, entity_id, race_id, archetype_id, weapon_ids
 	)
@@ -78,7 +78,7 @@ def create_player_from_ids(
 	player_instance_id: str,
 	data_dir: Union[str, Path] = "data",
 ) -> Player:
-	catalog = load_catalog(data_dir)
+	catalog = load_catalog_registry(data_dir)
 	race, archetype, weapons = _resolve_catalog_entry(
 		catalog, entity_id, race_id, archetype_id, weapon_ids
 	)
@@ -104,7 +104,7 @@ def create_enemy_from_ids(
 	enemy_instance_id: str,
 	data_dir: Union[str, Path] = "data",
 ) -> Enemy:
-	catalog = load_catalog(data_dir)
+	catalog = load_catalog_registry(data_dir)
 	race, archetype, weapons = _resolve_catalog_entry(
 		catalog, entity_id, race_id, archetype_id, weapon_ids
 	)

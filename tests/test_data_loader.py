@@ -3,12 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from util.data_loader import (
-    load_dungeon_templates,
-    load_enemy_templates,
-    load_catalog,
-    load_player_templates,
-)
+from registry.catalog_registry import load_catalog_registry
+from registry.dungeon_registry import load_dungeon_registry
+from registry.enemy_registry import load_enemy_registry
+from registry.player_registry import load_player_registry
 from util.entity_factory import (
     create_enemy_from_ids,
     create_entity_from_ids,
@@ -21,7 +19,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 
 
 def test_load_catalog_resolves_id_references():
-    catalog = load_catalog(DATA_DIR)
+    catalog = load_catalog_registry(DATA_DIR)
 
     fire_arrow = catalog.attacks["atk_fire_arrow_01"]
     assert [effect.id for effect in fire_arrow.applied_status_effects] == ["se_dot_fire_01"]
@@ -100,7 +98,7 @@ def test_load_catalog_raises_on_unknown_reference(tmp_path: Path):
     (data_copy / "attacks.json").write_text(json.dumps(attacks, indent=2), encoding="utf-8")
 
     with pytest.raises(KeyError, match="se_missing_999"):
-        load_catalog(data_copy)
+        load_catalog_registry(data_copy)
 
 
 def test_create_player_from_ids_sets_instance_id_and_defaults():
@@ -140,7 +138,7 @@ def test_create_enemy_from_ids_sets_instance_id_and_defaults():
 
 
 def test_load_player_templates_returns_entity_records_without_instance_ids():
-    players = load_player_templates(DATA_DIR)
+    players = load_player_registry(DATA_DIR)
 
     assert "ent_human_warrior_01" in players
     player_template = players["ent_human_warrior_01"]
@@ -152,7 +150,7 @@ def test_load_player_templates_returns_entity_records_without_instance_ids():
 
 
 def test_load_enemy_templates_returns_entity_records_without_instance_ids():
-    enemies = load_enemy_templates(DATA_DIR)
+    enemies = load_enemy_registry(DATA_DIR)
 
     assert "ent_fireborn_sage_01" in enemies
     enemy_template = enemies["ent_fireborn_sage_01"]
@@ -186,11 +184,11 @@ def test_load_player_templates_raises_on_unknown_reference(tmp_path: Path):
     (data_copy / "players.json").write_text(json.dumps(players, indent=2), encoding="utf-8")
 
     with pytest.raises(KeyError, match="Unknown race id 'race_missing_999'"):
-        load_player_templates(data_copy)
+        load_player_registry(data_copy)
 
 
 def test_load_dungeon_templates_resolves_enemy_references():
-    dungeons = load_dungeon_templates(DATA_DIR)
+    dungeons = load_dungeon_registry(DATA_DIR)
 
     assert "dgn_ember_catacombs_01" in dungeons
     dungeon = dungeons["dgn_ember_catacombs_01"]
@@ -225,7 +223,7 @@ def test_load_dungeon_templates_raises_on_unknown_enemy_reference(tmp_path: Path
     (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
 
     with pytest.raises(KeyError, match="Unknown enemy id 'ent_missing_999'"):
-        load_dungeon_templates(data_copy)
+        load_dungeon_registry(data_copy)
 
 
 def test_load_dungeon_templates_raises_on_unknown_room_connection(tmp_path: Path):
@@ -252,7 +250,7 @@ def test_load_dungeon_templates_raises_on_unknown_room_connection(tmp_path: Path
     (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
 
     with pytest.raises(ValueError, match="references unknown connection 'room_missing_999'"):
-        load_dungeon_templates(data_copy)
+        load_dungeon_registry(data_copy)
 
 
 def test_load_dungeon_templates_raises_on_unreachable_end_room(tmp_path: Path):
@@ -279,7 +277,7 @@ def test_load_dungeon_templates_raises_on_unreachable_end_room(tmp_path: Path):
     (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
 
     with pytest.raises(ValueError, match="is not reachable from start_room"):
-        load_dungeon_templates(data_copy)
+        load_dungeon_registry(data_copy)
 
 
 def test_load_dungeon_templates_raises_on_unknown_start_room(tmp_path: Path):
@@ -306,7 +304,7 @@ def test_load_dungeon_templates_raises_on_unknown_start_room(tmp_path: Path):
     (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
 
     with pytest.raises(ValueError, match="unknown start_room 'room_missing_999'"):
-        load_dungeon_templates(data_copy)
+        load_dungeon_registry(data_copy)
 
 
 def test_load_catalog_raises_on_schema_violation(tmp_path: Path):
@@ -334,7 +332,7 @@ def test_load_catalog_raises_on_schema_violation(tmp_path: Path):
     (data_copy / "attacks.json").write_text(json.dumps(attacks, indent=2), encoding="utf-8")
 
     with pytest.raises(ValueError, match="Schema validation failed for 'attacks.json'"):
-        load_catalog(data_copy)
+        load_catalog_registry(data_copy)
 
 
 def test_load_player_templates_raises_on_entity_schema_violation(tmp_path: Path):
@@ -361,7 +359,7 @@ def test_load_player_templates_raises_on_entity_schema_violation(tmp_path: Path)
     (data_copy / "players.json").write_text(json.dumps(players, indent=2), encoding="utf-8")
 
     with pytest.raises(ValueError, match="Schema validation failed for 'players.json'"):
-        load_player_templates(data_copy)
+        load_player_registry(data_copy)
 
 
 def test_load_dungeon_templates_raises_on_schema_violation(tmp_path: Path):
@@ -388,4 +386,4 @@ def test_load_dungeon_templates_raises_on_schema_violation(tmp_path: Path):
     (data_copy / "dungeons.json").write_text(json.dumps(dungeons, indent=2), encoding="utf-8")
 
     with pytest.raises(ValueError, match="Schema validation failed for 'dungeons.json'"):
-        load_dungeon_templates(data_copy)
+        load_dungeon_registry(data_copy)
