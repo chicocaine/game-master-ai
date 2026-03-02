@@ -21,12 +21,13 @@
 
 <!-- Game Engine -->
 ## Game Engine
-- [ ] game state types and definitions
+- [x] game state types and definitions
 - [ ] pre-game loop
 - [ ] in-game loop
 - [ ] post-game loop
 - [ ] validation engine
 - [ ] resolution engine
+- [ ] rules (game rules)
 - [ ] main (state_manager and main game engine loop)
 
 <!-- LLM Integration  -->
@@ -37,3 +38,7 @@
 - [ ] action mapping
 - [ ] narration
 - [ ] enemy AI
+
+<!-- checks -->
+## checks
+- [ ] logging into json
