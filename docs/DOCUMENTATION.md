@@ -54,12 +54,12 @@ Player Input (natural language)
 
 | Path | Responsibility |
 |------|----------------|
-| `core/` | Enums, action model, event model, narration model, dice, rules |
+| `core/` | Deterministic game logic: `action.py`, `validation_engine.py`, `resolution_engine.py`, dice, rules, and state contracts |
+| `engine/` | Execution infrastructure: `game_loop.py`, `state_manager.py`, low-level `llm_client.py`, and runtime orchestration |
+| `agent/` | Decision layer: `agent_manager.py`, `player_parser.py`, `narrator.py`, `enemy_ai.py`, `context_builder.py`, and `memory.py` |
 | `models/` | Typed dataclass models for all game objects |
 | `registry/` | Data loaders and in-memory indexes for static game data |
 | `data/` | JSON definitions for races, archetypes, weapons, spells, attacks, enemies, dungeons, status effects |
-| `engine/` | *(not yet implemented)* Game state, validation engine, resolution engine, game loop |
-| `agent/` | *(not yet implemented)* LLM client, context builder, action parser, narration generator |
 | `util/` | JSON schema validator, entity factory, logging helpers |
 | `tests/` | Pytest test suites |
 
@@ -120,7 +120,7 @@ class Action:
     action_id: str            # uuid
 ```
 
-Required parameters per `ActionType` are declared in a single `REQUIRED_PARAMETERS` table in `core/actions.py`, making validation trivially extensible.
+Required parameters per `ActionType` are declared in a single `REQUIRED_PARAMETERS` table in `core/action.py`, making validation trivially extensible.
 
 #### Event
 ```python
@@ -396,7 +396,7 @@ Summary stats are computed (enemies defeated, rooms cleared, damage dealt/receiv
 
 ## 4. LLM Integration and Context Management
 
-### 4.1 LLM Client (`agent/llm_client.py`)
+### 4.1 LLM Client (`engine/llm_client.py`)
 
 A thin wrapper around the model provider SDK (OpenAI-compatible API). Responsibilities:
 - Sends system + user messages.
@@ -489,7 +489,7 @@ The conversation/query responder maintains a rolling window of the last N player
 
 ### 5.1 Action Parser
 
-**File:** `agent/action_parser.py`
+**File:** `agent/player_parser.py`
 
 **Responsibility:** Convert raw player natural language into a validated `Action` object.
 
@@ -524,7 +524,7 @@ The engine delivers `question` to the player as a GM prompt without advancing th
 raw_input
     │
     ▼
-ActionParserLLM.parse(raw_input, context)
+PlayerParserLLM.parse(raw_input, context)
     │  returns raw JSON string
     ▼
 json.loads()  → raises LLMParseError if not valid JSON
@@ -544,9 +544,9 @@ validate_action(action)  → List[str] errors
 
 ### 5.2 Query and Conversation Responder
 
-**File:** `agent/conversation.py`
+**Files:** `agent/agent_manager.py`, `agent/memory.py`
 
-**Responsibility:** Handle `ActionType.QUERY` and `ActionType.CONVERSE` actions. These do not pass through the resolution engine — they are routed directly to this module after action validation.
+**Responsibility:** Handle `ActionType.QUERY` and `ActionType.CONVERSE` actions. These do not pass through deterministic action resolution — they are routed through the agent manager after action validation.
 
 **QUERY:** The player asks for information (`scope`: `rules`, `state`, `dungeon`, `party`). The responder answers factually from the provided context without embellishment or invention. It must not assert game state facts not present in the context payload.
 
@@ -556,7 +556,7 @@ validate_action(action)  → List[str] errors
 
 ### 5.3 Narration Generator
 
-**File:** `agent/narration.py`
+**File:** `agent/narrator.py`
 
 **Responsibility:** Convert the resolved `Event` stream from a single turn into immersive narrative prose.
 
