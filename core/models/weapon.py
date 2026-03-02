@@ -2,14 +2,14 @@ from dataclasses import dataclass, field
 from typing import Any, List
 
 from core.enums import (
-	WeaponProficiency, 
-	WeaponHandling, 
-	WeaponWeightClass, 
-	WeaponDelivery, 
-	WeaponMagicType
+	WeaponProficiency,
+	WeaponHandling,
+	WeaponWeightClass,
+	WeaponDelivery,
+	WeaponMagicType,
 )
-from models.attack import Attack
-from models.spell import Spell
+from core.models.attack import Attack
+from core.models.spell import Spell
 
 
 def _parse_weapon_proficiency(value: Any) -> WeaponProficiency:
@@ -58,6 +58,7 @@ def _parse_known_attacks(value: Any) -> List[Attack]:
 			attacks.append(Attack.from_dict(item))
 	return attacks
 
+
 def _parse_known_spells(value: Any) -> List[Spell]:
 	if not isinstance(value, list):
 		return []
@@ -69,6 +70,7 @@ def _parse_known_spells(value: Any) -> List[Spell]:
 		elif isinstance(item, dict):
 			spells.append(Spell.from_dict(item))
 	return spells
+
 
 @dataclass
 class Weapon:
@@ -111,4 +113,3 @@ class Weapon:
 			known_attacks=_parse_known_attacks(data.get("known_attacks", [])),
 			known_spells=_parse_known_spells(data.get("known_spells", [])),
 		)
-

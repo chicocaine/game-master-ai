@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from typing import Any, List
 
 from core.enums import DamageType
-from models.attack import Attack
-from models.spell import Spell
+from core.models.attack import Attack
+from core.models.spell import Spell
 
 
 def _get_str(data: dict, key: str) -> str:

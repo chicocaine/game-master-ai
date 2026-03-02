@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
 from core.enums import SpellType, DamageType
-from models.status_effect import StatusEffectInstance
+from core.models.status_effect import StatusEffectInstance
 
 
 def _parse_spell_type(spell_type: Any) -> SpellType:

@@ -3,47 +3,49 @@ from typing import Dict, Any, List
 
 from core.enums import StatusEffectType
 
+
 def _parse_effect_type(effect_type: Any) -> StatusEffectType:
-    if isinstance(effect_type, StatusEffectType):
-        return effect_type
-    return StatusEffectType(str(effect_type))
+	if isinstance(effect_type, StatusEffectType):
+		return effect_type
+	return StatusEffectType(str(effect_type))
 
 
 def _get_parameters(data: dict) -> Dict[str, Any]:
-    params = data.get("parameters", {})
-    return dict(params) if isinstance(params, dict) else {}
+	params = data.get("parameters", {})
+	return dict(params) if isinstance(params, dict) else {}
 
 
 def _get_str(data: dict, key: str) -> str:
-    return str(data.get(key, ""))
+	return str(data.get(key, ""))
 
 
 @dataclass
 class StatusEffectDefinition:
-    id: str
-    name: str
-    description: str
-    type: StatusEffectType
-    parameters: Dict[str, Any] = field(default_factory=dict)
+	id: str
+	name: str
+	description: str
+	type: StatusEffectType
+	parameters: Dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> dict:
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "type": self.type.value,
-            "parameters": dict(self.parameters),
-        }
+	def to_dict(self) -> dict:
+		return {
+			"id": self.id,
+			"name": self.name,
+			"description": self.description,
+			"type": self.type.value,
+			"parameters": dict(self.parameters),
+		}
 
-    @classmethod
-    def from_dict(cls, data: dict) -> "StatusEffectDefinition":
-        return cls(
-            id=_get_str(data, "id"),
-            name=_get_str(data, "name"),
-            description=_get_str(data, "description"),
-            type=_parse_effect_type(data.get("type")),
-            parameters=_get_parameters(data),
-        )
+	@classmethod
+	def from_dict(cls, data: dict) -> "StatusEffectDefinition":
+		return cls(
+			id=_get_str(data, "id"),
+			name=_get_str(data, "name"),
+			description=_get_str(data, "description"),
+			type=_parse_effect_type(data.get("type")),
+			parameters=_get_parameters(data),
+		)
+
 
 def _get_int(value: Any) -> int:
 	return int(value)

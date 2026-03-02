@@ -9,9 +9,9 @@ from core.enums import (
 	WeaponDelivery,
 	WeaponMagicType,
 )
-from models.attack import Attack
-from models.spell import Spell
-from models.weapon import Weapon
+from core.models.attack import Attack
+from core.models.spell import Spell
+from core.models.weapon import Weapon
 
 
 def _get_str(data: dict, key: str) -> str:

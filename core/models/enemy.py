@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from models.entity import Entity
+from core.models.entity import Entity
 
 
 def _get_str(data: dict, key: str) -> str:
@@ -8,16 +8,18 @@ def _get_str(data: dict, key: str) -> str:
 
 
 @dataclass
-class Player(Entity):
-	player_instance_id: str = ""
+class Enemy(Entity):
+	enemy_instance_id: str = ""
+	persona: str = ""
 
 	def to_dict(self) -> dict:
 		payload = super().to_dict()
-		payload["player_instance_id"] = self.player_instance_id
+		payload["enemy_instance_id"] = self.enemy_instance_id
+		payload["persona"] = self.persona
 		return payload
 
 	@classmethod
-	def from_dict(cls, data: dict) -> "Player":
+	def from_dict(cls, data: dict) -> "Enemy":
 		entity = Entity.from_dict(data)
 		return cls(
 			id=entity.id,
@@ -38,19 +40,21 @@ class Player(Entity):
 			resistances=entity.resistances,
 			immunities=entity.immunities,
 			vulnerabilities=entity.vulnerabilities,
-			player_instance_id=_get_str(data, "player_instance_id"),
+			enemy_instance_id=_get_str(data, "enemy_instance_id"),
+			persona=_get_str(data, "persona"),
 		)
 
 
-def create_player(
+def create_enemy(
 	id: str,
 	name: str,
 	description: str,
 	race,
 	archetype,
 	weapons,
-	player_instance_id: str,
-) -> Player:
+	enemy_instance_id: str,
+	persona: str = "",
+) -> Enemy:
 	entity = Entity.create(
 		id=id,
 		name=name,
@@ -60,7 +64,7 @@ def create_player(
 		weapons=weapons,
 	)
 
-	return Player(
+	return Enemy(
 		id=entity.id,
 		name=entity.name,
 		description=entity.description,
@@ -79,5 +83,6 @@ def create_player(
 		resistances=entity.resistances,
 		immunities=entity.immunities,
 		vulnerabilities=entity.vulnerabilities,
-		player_instance_id=player_instance_id,
+		enemy_instance_id=enemy_instance_id,
+		persona=persona,
 	)

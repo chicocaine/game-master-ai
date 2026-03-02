@@ -1,20 +1,20 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-from core.enums import ( 
-    DamageType, 
-    WeaponProficiency, 
-    WeaponHandling, 
-    WeaponWeightClass, 
-    WeaponDelivery, 
-    WeaponMagicType
+from core.enums import (
+    DamageType,
+    WeaponProficiency,
+    WeaponHandling,
+    WeaponWeightClass,
+    WeaponDelivery,
+    WeaponMagicType,
 )
-from models.attack import Attack
-from models.archetype import Archetype
-from models.race import Race
-from models.spell import Spell
-from models.status_effect import StatusEffectInstance
-from models.weapon import Weapon
+from core.models.attack import Attack
+from core.models.archetype import Archetype
+from core.models.race import Race
+from core.models.spell import Spell
+from core.models.status_effect import StatusEffectInstance
+from core.models.weapon import Weapon
 
 
 def _get_str(data: dict, key: str) -> str:
@@ -46,7 +46,7 @@ def _parse_race(value: Any) -> Race:
 		return value
 	if isinstance(value, dict):
 		return Race.from_dict(value)
-	return Race(id="", name="", description="", base_hp=0, base_AC=0)
+	return Race(id="", name="", description="", base_hp=0, base_AC=0, base_spell_slots=0)
 
 
 def _parse_archetype(value: Any) -> Archetype:
@@ -54,7 +54,7 @@ def _parse_archetype(value: Any) -> Archetype:
 		return value
 	if isinstance(value, dict):
 		return Archetype.from_dict(value)
-	return Archetype(id="", name="", description="", hp_mod=0, AC_mod=0)
+	return Archetype(id="", name="", description="", hp_mod=0, AC_mod=0, spell_slot_mod=0)
 
 
 def _parse_weapon(value: Any) -> Weapon:
