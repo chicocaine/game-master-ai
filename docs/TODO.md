@@ -15,9 +15,9 @@
 <!-- Game Helpers and Util -->
 ## Game Helpers and Util
 - [x] dice
-- [ ] event logging
-- [ ] session logging
-- [ ] error logging
+- [x] event logging
+- [x] session logging
+- [x] error logging
 
 <!-- Game Engine -->
 ## Game Engine
