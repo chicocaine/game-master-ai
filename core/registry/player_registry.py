@@ -1,11 +1,10 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from models.entity import Entity
-from registry.entity_registry import load_entity_registry
+from core.models.entity import Entity
+from core.registry.entity_registry import load_entity_registry
 
-
-from registry.catalog_registry import DataCatalog
+from core.registry.catalog_registry import DataCatalog
 
 
 def load_player_registry(

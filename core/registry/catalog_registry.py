@@ -2,18 +2,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Union
 
-from models.archetype import Archetype
-from models.attack import Attack
-from models.race import Race
-from models.spell import Spell
-from models.status_effect import StatusEffectDefinition
-from models.weapon import Weapon
-from registry.archetype_registry import load_archetype_registry
-from registry.attack_registry import load_attack_registry
-from registry.race_registry import load_race_registry
-from registry.spell_registry import load_spell_registry
-from registry.status_effect_registry import load_status_effect_registry
-from registry.weapon_registry import load_weapon_registry
+from core.models.archetype import Archetype
+from core.models.attack import Attack
+from core.models.race import Race
+from core.models.spell import Spell
+from core.models.status_effect import StatusEffectDefinition
+from core.models.weapon import Weapon
+from core.registry.archetype_registry import load_archetype_registry
+from core.registry.attack_registry import load_attack_registry
+from core.registry.race_registry import load_race_registry
+from core.registry.spell_registry import load_spell_registry
+from core.registry.status_effect_registry import load_status_effect_registry
+from core.registry.weapon_registry import load_weapon_registry
 from util.json_schema_validator import validate_model_data_files
 
 

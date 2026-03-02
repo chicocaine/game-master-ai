@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, TypeVar, Union
 
-from models.status_effect import StatusEffectDefinition, StatusEffectInstance
+from core.models.status_effect import StatusEffectDefinition, StatusEffectInstance
 from util.json_schema_validator import validate_model_data_files
 
 

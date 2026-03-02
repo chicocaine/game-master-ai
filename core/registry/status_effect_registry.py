@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, Union
 
-from models.status_effect import StatusEffectDefinition
-from registry.common import index_by_id, load_json, validate_files
+from core.models.status_effect import StatusEffectDefinition
+from core.registry.common import index_by_id, load_json, validate_files
 
 
 def load_status_effect_registry(

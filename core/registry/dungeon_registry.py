@@ -1,14 +1,13 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from models.dungeon import Dungeon
-from models.enemy import Enemy
-from registry.common import index_by_id, load_json, resolve_ids, validate_files
-from registry.enemy_registry import load_enemy_model_registry
+from core.models.dungeon import Dungeon
+from core.models.enemy import Enemy
+from core.registry.common import index_by_id, load_json, resolve_ids, validate_files
+from core.registry.enemy_registry import load_enemy_model_registry
 from util.data_validator import validate_dungeon
 
-
-from registry.catalog_registry import DataCatalog
+from core.registry.catalog_registry import DataCatalog
 
 
 def load_dungeon_registry(

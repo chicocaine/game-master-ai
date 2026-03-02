@@ -1,11 +1,10 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from models.entity import Entity
-from registry.common import resolve_ids, resolve_status_effect_instances
+from core.models.entity import Entity
+from core.registry.common import resolve_ids, resolve_status_effect_instances
 
-
-from registry.catalog_registry import DataCatalog
+from core.registry.catalog_registry import DataCatalog
 
 
 def resolve_entity_payload(raw: dict, catalog: "DataCatalog") -> dict:
@@ -45,8 +44,8 @@ def load_entity_registry(
 	data_dir: Union[str, Path] = "data",
 	catalog: Optional["DataCatalog"] = None,
 ) -> Dict[str, Entity]:
-	from registry.catalog_registry import load_catalog_registry
-	from registry.common import load_indexed_rows
+	from core.registry.catalog_registry import load_catalog_registry
+	from core.registry.common import load_indexed_rows
 
 	template_data = load_indexed_rows(data_dir, file_name)
 	catalog_data = catalog if catalog is not None else load_catalog_registry(data_dir)

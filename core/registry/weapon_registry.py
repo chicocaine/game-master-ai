@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from models.attack import Attack
-from models.spell import Spell
-from models.weapon import Weapon
-from registry.attack_registry import load_attack_registry
-from registry.common import index_by_id, load_json, resolve_ids, validate_files
-from registry.spell_registry import load_spell_registry
+from core.models.attack import Attack
+from core.models.spell import Spell
+from core.models.weapon import Weapon
+from core.registry.attack_registry import load_attack_registry
+from core.registry.common import index_by_id, load_json, resolve_ids, validate_files
+from core.registry.spell_registry import load_spell_registry
 
 
 def load_weapon_registry(

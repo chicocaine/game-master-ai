@@ -1,15 +1,15 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from models.spell import Spell
-from models.status_effect import StatusEffectDefinition
-from registry.common import (
+from core.models.spell import Spell
+from core.models.status_effect import StatusEffectDefinition
+from core.registry.common import (
 	index_by_id,
 	load_json,
 	resolve_status_effect_instances,
 	validate_files,
 )
-from registry.status_effect_registry import load_status_effect_registry
+from core.registry.status_effect_registry import load_status_effect_registry
 
 
 def load_spell_registry(
