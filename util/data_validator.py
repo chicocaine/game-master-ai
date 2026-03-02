@@ -1,6 +1,6 @@
 from collections import deque
 from typing import Dict, List, Set
-from models.dungeon import Dungeon, Room
+from core.models.dungeon import Dungeon, Room
 
 def _validate_required_rooms(dungeon: Dungeon, room_ids: Set[str]) -> None:
 	if dungeon.start_room not in room_ids:

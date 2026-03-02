@@ -1,5 +1,5 @@
-from models.enemy import Enemy, create_enemy
-from models.player import Player, create_player
+from core.models.enemy import Enemy, create_enemy
+from core.models.player import Player, create_player
 
 
 def _weapon_dict(

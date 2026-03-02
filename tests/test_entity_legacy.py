@@ -1,4 +1,4 @@
-from models.entity import Entity
+from core.models.entity import Entity
 
 
 def _weapon_dict(

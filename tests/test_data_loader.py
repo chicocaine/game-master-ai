@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from registry.catalog_registry import load_catalog_registry
-from registry.dungeon_registry import load_dungeon_registry
-from registry.enemy_registry import load_enemy_registry
-from registry.player_registry import load_player_registry
+from core.registry.catalog_registry import load_catalog_registry
+from core.registry.dungeon_registry import load_dungeon_registry
+from core.registry.enemy_registry import load_enemy_registry
+from core.registry.player_registry import load_player_registry
 from util.entity_factory import (
     create_enemy_from_ids,
     create_entity_from_ids,
@@ -138,7 +138,7 @@ def test_create_enemy_from_ids_sets_instance_id_and_defaults():
 
 
 def test_load_enemy_registry_includes_persona():
-    from registry.enemy_registry import load_enemy_model_registry
+    from core.registry.enemy_registry import load_enemy_model_registry
 
     enemies = load_enemy_model_registry(DATA_DIR)
 

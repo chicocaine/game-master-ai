@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Dict, List, Optional, TypeVar, Union
 
-from models.entity import Entity, create_entity
-from models.enemy import Enemy, create_enemy
-from models.player import Player, create_player
-from registry.catalog_registry import DataCatalog, load_catalog_registry
+from core.models.entity import Entity, create_entity
+from core.models.enemy import Enemy, create_enemy
+from core.models.player import Player, create_player
+from core.registry.catalog_registry import DataCatalog, load_catalog_registry
 
 
 TModel = TypeVar("TModel")
