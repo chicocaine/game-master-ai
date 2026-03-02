@@ -137,6 +137,16 @@ def test_create_enemy_from_ids_sets_instance_id_and_defaults():
     assert [weapon.id for weapon in enemy.weapons] == ["wpn_longsword_01"]
 
 
+def test_load_enemy_registry_includes_persona():
+    from registry.enemy_registry import load_enemy_model_registry
+
+    enemies = load_enemy_model_registry(DATA_DIR)
+
+    assert "ent_fireborn_sage_01" in enemies
+    enemy = enemies["ent_fireborn_sage_01"]
+    assert enemy.persona == "calculated, patient — casts control spells first, then exploits vulnerabilities"
+
+
 def test_load_player_templates_returns_entity_records_without_instance_ids():
     players = load_player_registry(DATA_DIR)
 
@@ -159,6 +169,32 @@ def test_load_enemy_templates_returns_entity_records_without_instance_ids():
     assert enemy_template.archetype.id == "arc_sage_01"
     assert [weapon.id for weapon in enemy_template.weapons] == ["wpn_staff_01"]
     assert not hasattr(enemy_template, "enemy_instance_id")
+
+
+def test_load_enemy_templates_raises_on_enemy_schema_violation(tmp_path: Path):
+    data_copy = tmp_path / "data"
+    data_copy.mkdir(parents=True, exist_ok=True)
+
+    for file_name in [
+        "status_effects.json",
+        "attacks.json",
+        "spells.json",
+        "weapons.json",
+        "races.json",
+        "archetypes.json",
+        "players.json",
+        "enemies.json",
+    ]:
+        source = DATA_DIR / file_name
+        target = data_copy / file_name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    enemies = json.loads((data_copy / "enemies.json").read_text(encoding="utf-8"))
+    enemies[0].pop("name")
+    (data_copy / "enemies.json").write_text(json.dumps(enemies, indent=2), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Schema validation failed for 'enemies.json'"):
+        load_enemy_registry(data_copy)
 
 
 def test_load_player_templates_raises_on_unknown_reference(tmp_path: Path):
@@ -335,7 +371,7 @@ def test_load_catalog_raises_on_schema_violation(tmp_path: Path):
         load_catalog_registry(data_copy)
 
 
-def test_load_player_templates_raises_on_entity_schema_violation(tmp_path: Path):
+def test_load_player_templates_raises_on_player_schema_violation(tmp_path: Path):
     data_copy = tmp_path / "data"
     data_copy.mkdir(parents=True, exist_ok=True)
 
