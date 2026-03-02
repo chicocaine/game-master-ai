@@ -93,6 +93,25 @@ def test_enemy_from_dict_round_trip_includes_instance_id():
 	assert enemy.to_dict()["enemy_instance_id"] == "enm_inst_01"
 
 
+def test_enemy_from_dict_round_trip_includes_persona():
+	payload = _base_entity_payload()
+	payload["persona"] = "cowardly, prefers ranged attacks"
+
+	enemy = Enemy.from_dict(payload)
+
+	assert enemy.persona == "cowardly, prefers ranged attacks"
+	assert enemy.to_dict()["persona"] == "cowardly, prefers ranged attacks"
+
+
+def test_enemy_from_dict_persona_defaults_to_empty_string_when_absent():
+	payload = _base_entity_payload()
+
+	enemy = Enemy.from_dict(payload)
+
+	assert enemy.persona == ""
+	assert enemy.to_dict()["persona"] == ""
+
+
 def test_create_player_sets_player_instance_id_and_defaults():
 	payload = _base_entity_payload()
 
@@ -129,3 +148,37 @@ def test_create_enemy_sets_enemy_instance_id_and_defaults():
 	assert enemy.hp == 12
 	assert enemy.AC == 12
 	assert enemy.spell_slots == 2
+
+
+def test_create_enemy_sets_persona():
+	payload = _base_entity_payload()
+
+	enemy = create_enemy(
+		id=payload["id"],
+		name=payload["name"],
+		description=payload["description"],
+		race=payload["race"],
+		archetype=payload["archetype"],
+		weapons=payload["weapons"],
+		enemy_instance_id="enm_inst_create_02",
+		persona="aggressive, charges front-liners first",
+	)
+
+	assert enemy.persona == "aggressive, charges front-liners first"
+	assert enemy.to_dict()["persona"] == "aggressive, charges front-liners first"
+
+
+def test_create_enemy_persona_defaults_to_empty_string():
+	payload = _base_entity_payload()
+
+	enemy = create_enemy(
+		id=payload["id"],
+		name=payload["name"],
+		description=payload["description"],
+		race=payload["race"],
+		archetype=payload["archetype"],
+		weapons=payload["weapons"],
+		enemy_instance_id="enm_inst_create_03",
+	)
+
+	assert enemy.persona == ""

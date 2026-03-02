@@ -17,6 +17,7 @@
     "known_spells": [],
     "resistances": [],
     "immunities": [],
-    "vulnerabilities": []
+    "vulnerabilities": [],
+    "persona": "calculated, patient — casts control spells first, then exploits vulnerabilities"
   }
 ]

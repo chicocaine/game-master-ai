@@ -12,8 +12,8 @@ DATA_SCHEMA_MAP: Dict[str, str] = {
 	"weapons.json": "weapon.schema.json",
 	"races.json": "race.schema.json",
 	"archetypes.json": "archetype.schema.json",
-	"players.json": "entity.schema.json",
-	"enemies.json": "entity.schema.json",
+	"players.json": "player.schema.json",
+	"enemies.json": "enemy.schema.json",
 	"dungeons.json": "dungeon.schema.json",
 }
 

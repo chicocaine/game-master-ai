@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemata/enemy.schema.json",
+  "title": "Enemy",
+  "description": "Schema for serialized Enemy template objects stored in enemies.json.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "race",
+    "archetype",
+    "weapons",
+    "hp",
+    "max_hp",
+    "base_AC",
+    "AC",
+    "spell_slots",
+    "max_spell_slots",
+    "active_status_effects",
+    "known_attacks",
+    "known_spells",
+    "resistances",
+    "immunities",
+    "vulnerabilities",
+    "persona"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "race": { "type": "string", "minLength": 1 },
+    "archetype": { "type": "string", "minLength": 1 },
+    "weapons": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "hp": { "type": "integer" },
+    "max_hp": { "type": "integer", "minimum": 0 },
+    "base_AC": { "type": "integer", "minimum": 0 },
+    "AC": { "type": "integer" },
+    "spell_slots": { "type": "integer", "minimum": 0 },
+    "max_spell_slots": { "type": "integer", "minimum": 0 },
+    "active_status_effects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/statusEffectReference" }
+    },
+    "known_attacks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_spells": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "resistances": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "immunities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/damageType" }
+    },
+    "persona": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "statusEffectReference": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "string", "minLength": 1 },
+        { "type": "integer" }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "items": false
+    },
+    "damageType": {
+      "type": "string",
+      "enum": [
+        "acid",
+        "bludgeoning",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "piercing",
+        "poison",
+        "psychic",
+        "radiant",
+        "slashing",
+        "thunder"
+      ]
+    }
+  }
+}

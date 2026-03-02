@@ -10,10 +10,12 @@ def _get_str(data: dict, key: str) -> str:
 @dataclass
 class Enemy(Entity):
 	enemy_instance_id: str = ""
+	persona: str = ""
 
 	def to_dict(self) -> dict:
 		payload = super().to_dict()
 		payload["enemy_instance_id"] = self.enemy_instance_id
+		payload["persona"] = self.persona
 		return payload
 
 	@classmethod
@@ -39,6 +41,7 @@ class Enemy(Entity):
 			immunities=entity.immunities,
 			vulnerabilities=entity.vulnerabilities,
 			enemy_instance_id=_get_str(data, "enemy_instance_id"),
+			persona=_get_str(data, "persona"),
 		)
 
 
@@ -50,6 +53,7 @@ def create_enemy(
 	archetype,
 	weapons,
 	enemy_instance_id: str,
+	persona: str = "",
 ) -> Enemy:
 	entity = Entity.create(
 		id=id,
@@ -80,4 +84,5 @@ def create_enemy(
 		immunities=entity.immunities,
 		vulnerabilities=entity.vulnerabilities,
 		enemy_instance_id=enemy_instance_id,
+		persona=persona,
 	)
