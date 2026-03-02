@@ -20,6 +20,7 @@
     "spell_cost": 1,
     "parameters": {
       "magnitude": "1d8+2",
+      "damage_types": [],
       "hit_modifiers": 0,
       "applied_status_effects": [["se_hot_01", 3]]
     }
@@ -46,6 +47,7 @@
       "spell_cost": 3,
       "parameters": {
         "magnitude": "1d6+1",
+        "damage_types": [],
         "hit_modifiers": 0,
         "applied_status_effects": [["se_hot_01", 2]]
       }
