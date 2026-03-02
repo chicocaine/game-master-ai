@@ -1,5 +1,11 @@
 from enum import Enum
 
+class GameState(Enum):
+    PREGAME = "pregame"
+    EXPLORATION = "exploration"
+    ENCOUNTER = "encounter"
+    POSTGAME = "postgame"
+
 class DifficultyType(Enum):
     EASY = "easy"
     MEDIUM = "medium"
