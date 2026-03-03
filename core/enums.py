@@ -147,11 +147,13 @@ class SpellType(Enum):
     BUFF = "buff"
     DEBUFF = "debuff"
     CONTROL = "control"
+    CLEANSE = "cleanse"
     AOE_ATTACK = "aoe_attack"
     AOE_HEAL = "aoe_heal"
     AOE_BUFF = "aoe_buff"
     AOE_DEBUFF = "aoe_debuff"
     AOE_CONTROL = "aoe_control"
+    AOE_CLEANSE = "aoe_cleanse"
 
 class WeaponProficiency(Enum):
     SIMPLE= "simple"

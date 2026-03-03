@@ -24,11 +24,13 @@
         "buff",
         "debuff",
         "control",
+        "cleanse",
         "aoe_attack",
         "aoe_heal",
         "aoe_buff",
         "aoe_debuff",
-        "aoe_control"
+        "aoe_control",
+        "aoe_cleanse"
       ]
     },
     "spell_cost": { "type": "integer", "minimum": 0 },
