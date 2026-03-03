@@ -5,6 +5,7 @@ from typing import List
 from core.actions import Action
 from core.enums import EventType, GameState, RestType
 from core.events import Event, create_event
+from core.rules import can_move_to_room, normalize_violations, validate_rest_constraints
 from core.states.session import (
     GameSessionState,
     ensure_enemy_instance_ids,
@@ -14,19 +15,17 @@ from core.states.session import (
 
 
 def resolve_move_action(session: GameSessionState, action: Action) -> List[Event]:
+    destination_room_id = str(action.parameters.get("destination_room_id", ""))
+    violations = can_move_to_room(session, destination_room_id)
+    if violations:
+        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": normalize_violations(violations)})]
+
     if session.dungeon is None:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Dungeon not selected"]})]
 
-    destination_room_id = str(action.parameters.get("destination_room_id", ""))
-    current_room = find_room(session.dungeon, session.exploration.current_room_id)
     destination = find_room(session.dungeon, destination_room_id)
-
-    if current_room is None:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Current room not found"]})]
     if destination is None:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Destination room not found"]})]
-    if destination_room_id not in current_room.connections:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Destination room is not connected"]})]
 
     session.exploration.current_room_id = destination_room_id
     destination.is_visited = True
@@ -58,29 +57,19 @@ def resolve_explore_action(session: GameSessionState) -> List[Event]:
 
 
 def resolve_rest_action(session: GameSessionState, action: Action) -> List[Event]:
+    rest_type_raw = str(action.parameters.get("rest_type", ""))
+    violations = validate_rest_constraints(session, rest_type_raw)
+    if violations:
+        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": normalize_violations(violations)})]
+
     if session.dungeon is None:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Dungeon not selected"]})]
 
     current_room = find_room(session.dungeon, session.exploration.current_room_id)
     if current_room is None:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Current room not found"]})]
-    if current_room.is_rested:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Room already rested"]})]
 
-    rest_type_raw = str(action.parameters.get("rest_type", ""))
-    try:
-        rest_type = RestType(rest_type_raw)
-    except ValueError:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Invalid rest_type"]})]
-
-    if rest_type not in current_room.allowed_rests:
-        return [
-            create_event(
-                EventType.ACTION_REJECTED,
-                "action_rejected",
-                {"errors": ["Rest type not allowed in this room"]},
-            )
-        ]
+    rest_type = RestType(rest_type_raw)
 
     for player in session.party:
         if rest_type == RestType.LONG:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import List
 
 from core.actions import Action
 from core.validation import validate_action_with_details
@@ -16,36 +16,6 @@ from core.states.pregame import (
     handle_start,
 )
 from core.states.session import GameSessionState
-
-
-GLOBAL_ACTIONS = {
-    ActionType.ABANDON,
-    ActionType.QUERY,
-    ActionType.CONVERSE,
-}
-
-
-STATE_ACTIONS: Dict[GameState, set[ActionType]] = {
-    GameState.PREGAME: {
-        ActionType.CREATE_PLAYER,
-        ActionType.REMOVE_PLAYER,
-        ActionType.CHOOSE_DUNGEON,
-        ActionType.START,
-    },
-    GameState.EXPLORATION: {
-        ActionType.MOVE,
-        ActionType.EXPLORE,
-        ActionType.REST,
-    },
-    GameState.ENCOUNTER: {
-        ActionType.ATTACK,
-        ActionType.CAST_SPELL,
-        ActionType.END_TURN,
-    },
-    GameState.POSTGAME: {
-        ActionType.FINISH,
-    },
-}
 
 
 def validate_action_for_state(session: GameSessionState, action: Action) -> List[str]:

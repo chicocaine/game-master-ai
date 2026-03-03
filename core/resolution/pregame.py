@@ -5,6 +5,7 @@ from typing import List
 from core.actions import Action
 from core.enums import EventType, GameState
 from core.events import Event, create_event
+from core.rules import can_start_session, normalize_violations
 from core.registry.catalog_registry import load_catalog_registry
 from core.resolution.exploration import resolve_transition_to_encounter
 from core.states.session import (
@@ -139,8 +140,10 @@ def resolve_choose_dungeon_action(session: GameSessionState, action: Action) -> 
 
 
 def resolve_start_action(session: GameSessionState) -> List[Event]:
-    if not session.party:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Cannot start without party"]})]
+    violations = can_start_session(session)
+    if violations:
+        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": normalize_violations(violations)})]
+
     if session.dungeon is None:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Cannot start without dungeon"]})]
 

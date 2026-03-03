@@ -1,18 +1,24 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field as dataclass_field
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from core.actions import Action, validate_action
-from core.enums import ActionType, RestType
-from core.models.enemy import Enemy
-from core.models.player import Player
-from core.rules import RuleViolation, can_move_to_room, can_start_session, validate_action_legality
+from core.enums import ActionType
+from core.rules import (
+	RuleViolation,
+	can_move_to_room,
+	can_start_session,
+	resolve_actor,
+	validate_action_legality,
+	validate_actor_turn,
+	validate_attack_rules,
+	validate_rest_constraints,
+)
 from core.states.session import (
 	GameSessionState,
 	alive_enemies,
 	alive_players,
-	find_player_by_instance_id,
 	get_active_encounter,
 )
 
@@ -139,137 +145,12 @@ def _validate_move(session: GameSessionState, action: Action) -> List[Validation
 
 
 def _validate_rest(session: GameSessionState, action: Action) -> List[ValidationIssue]:
-	if session.dungeon is None:
-		return [ValidationIssue(code="dungeon_not_selected", message="Dungeon not selected")]
-
-	room = next(
-		(room for room in session.dungeon.rooms if room.id == session.exploration.current_room_id),
-		None,
-	)
-	if room is None:
-		return [ValidationIssue(code="current_room_not_found", message="Current room not found")]
-
-	issues: List[ValidationIssue] = []
 	rest_type_raw = str(action.parameters.get("rest_type", "")).strip()
-	if not rest_type_raw:
-		issues.append(ValidationIssue(code="missing_rest_type", message="Missing rest_type", field="rest_type"))
-		return issues
-
-	try:
-		rest_type = RestType(rest_type_raw)
-	except ValueError:
-		issues.append(ValidationIssue(code="invalid_rest_type", message="Invalid rest_type", field="rest_type"))
-		return issues
-
-	if room.is_rested:
-		issues.append(ValidationIssue(code="room_already_rested", message="Room already rested"))
-
-	if rest_type not in room.allowed_rests:
-		issues.append(ValidationIssue(code="rest_not_allowed", message="Rest type not allowed in this room"))
-
-	return issues
-
-
-def _validate_actor_turn(session: GameSessionState, actor_instance_id: str) -> List[ValidationIssue]:
-	if not session.encounter.turn_order:
-		return [ValidationIssue(code="no_active_turn_order", message="No active turn order")]
-	if session.encounter.current_turn_index >= len(session.encounter.turn_order):
-		return [ValidationIssue(code="invalid_turn_index", message="Encounter turn index out of bounds")]
-	active_actor = session.encounter.turn_order[session.encounter.current_turn_index]
-	if active_actor != actor_instance_id:
-		return [
-			ValidationIssue(
-				code="not_actor_turn",
-				message="Action is not legal outside the actor's turn",
-				field="actor_instance_id",
-				context={"active_actor_instance_id": active_actor},
-			)
-		]
-	return []
-
-
-def _normalize_target_ids(raw: object) -> List[str]:
-	if isinstance(raw, str):
-		return [raw]
-	if isinstance(raw, list):
-		return [str(item) for item in raw]
-	return []
-
-
-def _resolve_actor(session: GameSessionState, actor_instance_id: str) -> Optional[Player | Enemy]:
-	encounter = get_active_encounter(session)
-	actor_player = find_player_by_instance_id(session, actor_instance_id)
-	if actor_player is not None:
-		return actor_player
-	if encounter is None:
-		return None
-	for enemy in encounter.enemies:
-		if enemy.enemy_instance_id == actor_instance_id:
-			return enemy
-	return None
-
-
-def _validate_encounter_target_ids(session: GameSessionState, target_ids: List[str]) -> List[ValidationIssue]:
-	encounter = get_active_encounter(session)
-	if encounter is None:
-		return [ValidationIssue(code="no_active_encounter", message="No active encounter")]
-
-	valid_ids = {player.player_instance_id for player in session.party}
-	valid_ids.update(enemy.enemy_instance_id for enemy in encounter.enemies)
-
-	issues: List[ValidationIssue] = []
-	for target_id in target_ids:
-		if target_id not in valid_ids:
-			issues.append(
-				ValidationIssue(
-					code="unknown_target",
-					message=f"Unknown target '{target_id}'",
-					field="target_instance_ids",
-				)
-			)
-	return issues
+	return [_issue_from_rule(item) for item in validate_rest_constraints(session, rest_type_raw)]
 
 
 def _validate_attack(session: GameSessionState, action: Action) -> List[ValidationIssue]:
-	encounter = get_active_encounter(session)
-	if encounter is None:
-		return [ValidationIssue(code="no_active_encounter", message="No active encounter")]
-
-	issues: List[ValidationIssue] = []
-	issues.extend(_validate_actor_turn(session, action.actor_instance_id))
-
-	actor = _resolve_actor(session, action.actor_instance_id)
-	if actor is None:
-		issues.append(ValidationIssue(code="actor_not_found", message="Actor not found", field="actor_instance_id"))
-		return issues
-	if actor.hp <= 0:
-		issues.append(ValidationIssue(code="actor_defeated", message="Defeated actor cannot act"))
-
-	attack_id = str(action.parameters.get("attack_id", "")).strip()
-	if attack_id:
-		known_attack_ids = {attack.id for attack in actor.merged_attacks}
-		if attack_id not in known_attack_ids:
-			issues.append(
-				ValidationIssue(
-					code="unknown_attack",
-					message=f"Unknown attack '{attack_id}'",
-					field="attack_id",
-				)
-			)
-
-	target_ids = _normalize_target_ids(action.parameters.get("target_instance_ids", []))
-	if not target_ids:
-		issues.append(
-			ValidationIssue(
-				code="missing_targets",
-				message="Missing targets",
-				field="target_instance_ids",
-			)
-		)
-		return issues
-
-	issues.extend(_validate_encounter_target_ids(session, target_ids))
-	return issues
+	return [_issue_from_rule(item) for item in validate_attack_rules(session, action)]
 
 
 def _validate_cast_spell(session: GameSessionState, action: Action) -> List[ValidationIssue]:
@@ -277,7 +158,7 @@ def _validate_cast_spell(session: GameSessionState, action: Action) -> List[Vali
 	if issues:
 		return issues
 
-	actor = _resolve_actor(session, action.actor_instance_id)
+	actor = resolve_actor(session, action.actor_instance_id)
 	if actor is None:
 		return [ValidationIssue(code="actor_not_found", message="Actor not found", field="actor_instance_id")]
 
@@ -306,7 +187,7 @@ def _validate_cast_spell(session: GameSessionState, action: Action) -> List[Vali
 
 
 def _validate_end_turn(session: GameSessionState, action: Action) -> List[ValidationIssue]:
-	return _validate_actor_turn(session, action.actor_instance_id)
+	return [_issue_from_rule(item) for item in validate_actor_turn(session, action.actor_instance_id)]
 
 
 def validate_action_for_state(session: GameSessionState, action: Action) -> List[str]:

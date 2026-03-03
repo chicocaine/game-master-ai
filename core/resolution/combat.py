@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List
 
 from core.actions import Action
 from core.enums import EventType
 from core.events import Event, create_event
+from core.rules import normalize_target_ids, resolve_actor
 from core.states.session import (
     GameSessionState,
     find_enemy_by_instance_id,
@@ -12,24 +13,14 @@ from core.states.session import (
 )
 
 
-def _normalize_target_ids(raw: object) -> Tuple[List[str], str]:
-    if isinstance(raw, str):
-        return [raw], ""
-    if isinstance(raw, list):
-        return [str(value) for value in raw], ""
-    return [], "Invalid target_instance_ids"
-
-
 def resolve_attack_action(session: GameSessionState, encounter, action: Action) -> List[Event]:
-    target_ids, target_error = _normalize_target_ids(action.parameters.get("target_instance_ids", []))
-    if target_error:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": [target_error]})]
+    target_ids = normalize_target_ids(action.parameters.get("target_instance_ids", []))
+    if not isinstance(action.parameters.get("target_instance_ids", []), (str, list)):
+        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Invalid target_instance_ids"]})]
     if not target_ids:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Missing targets"]})]
 
-    actor_player = find_player_by_instance_id(session, action.actor_instance_id)
-    actor_enemy = find_enemy_by_instance_id(encounter, action.actor_instance_id)
-    if actor_player is None and actor_enemy is None:
+    if resolve_actor(session, action.actor_instance_id) is None:
         return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Actor not found"]})]
 
     events: List[Event] = [
@@ -62,9 +53,9 @@ def resolve_attack_action(session: GameSessionState, encounter, action: Action) 
 
 
 def resolve_cast_spell_action(session: GameSessionState, encounter, action: Action) -> List[Event]:
-    target_ids, target_error = _normalize_target_ids(action.parameters.get("target_instance_ids", []))
-    if target_error:
-        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": [target_error]})]
+    target_ids = normalize_target_ids(action.parameters.get("target_instance_ids", []))
+    if not isinstance(action.parameters.get("target_instance_ids", []), (str, list)):
+        return [create_event(EventType.ACTION_REJECTED, "action_rejected", {"errors": ["Invalid target_instance_ids"]})]
 
     spell_id = str(action.parameters.get("spell_id", ""))
     is_heal = "heal" in spell_id.lower()
