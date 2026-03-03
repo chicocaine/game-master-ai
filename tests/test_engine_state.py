@@ -86,10 +86,22 @@ def _build_session() -> GameSessionState:
     return GameSessionState(player_templates=player_templates, dungeon_templates={"dgn_test_simple": _build_simple_dungeon()}), player_id
 
 
+def _create_player_action_params_from_template(player_template) -> dict:
+    return {
+        "name": player_template.name,
+        "description": player_template.description,
+        "race": player_template.race.id,
+        "archetype": player_template.archetype.id,
+        "weapons": [weapon.id for weapon in player_template.weapons],
+        "player_instance_id": "plr_inst_01",
+    }
+
+
 def test_pregame_to_exploration_move_and_rest_flow():
     session, player_id = _build_session()
+    player_template = session.player_templates[player_id]
 
-    apply_action(session, create_action(ActionType.CREATE_PLAYER, {"entity_id": player_id, "player_instance_id": "plr_inst_01"}))
+    apply_action(session, create_action(ActionType.CREATE_PLAYER, _create_player_action_params_from_template(player_template)))
     apply_action(session, create_action(ActionType.CHOOSE_DUNGEON, {"dungeon_id": "dgn_test_simple"}))
     apply_action(session, create_action(ActionType.START))
 
@@ -107,8 +119,9 @@ def test_pregame_to_exploration_move_and_rest_flow():
 
 def test_move_rejected_for_unconnected_room():
     session, player_id = _build_session()
+    player_template = session.player_templates[player_id]
 
-    apply_action(session, create_action(ActionType.CREATE_PLAYER, {"entity_id": player_id, "player_instance_id": "plr_inst_01"}))
+    apply_action(session, create_action(ActionType.CREATE_PLAYER, _create_player_action_params_from_template(player_template)))
     apply_action(session, create_action(ActionType.CHOOSE_DUNGEON, {"dungeon_id": "dgn_test_simple"}))
     apply_action(session, create_action(ActionType.START))
 
@@ -127,17 +140,21 @@ def test_encounter_state_and_back_to_exploration_after_kill():
         dungeon_templates={"dgn_test_encounter": _build_encounter_dungeon(enemy_template)},
     )
 
-    apply_action(session, create_action(ActionType.CREATE_PLAYER, {"entity_id": player_id, "player_instance_id": "plr_inst_01"}))
+    player_template = player_templates[player_id]
+
+    apply_action(session, create_action(ActionType.CREATE_PLAYER, _create_player_action_params_from_template(player_template)))
     apply_action(session, create_action(ActionType.CHOOSE_DUNGEON, {"dungeon_id": "dgn_test_encounter"}))
     apply_action(session, create_action(ActionType.START))
 
     assert session.state == GameState.ENCOUNTER
     assert session.encounter.active_encounter_id == "enc_test_01"
 
+    player_attack_id = session.party[0].merged_attacks[0].id
+
     attack = create_action(
         ActionType.ATTACK,
         {
-            "attack_id": "atk_test",
+            "attack_id": player_attack_id,
             "target_instance_ids": ["enc_test_01_enemy_1"],
         },
         actor_instance_id="plr_inst_01",
@@ -149,7 +166,8 @@ def test_encounter_state_and_back_to_exploration_after_kill():
 
 def test_postgame_finish_resets_session_to_pregame():
     session, player_id = _build_session()
-    apply_action(session, create_action(ActionType.CREATE_PLAYER, {"entity_id": player_id, "player_instance_id": "plr_inst_01"}))
+    player_template = session.player_templates[player_id]
+    apply_action(session, create_action(ActionType.CREATE_PLAYER, _create_player_action_params_from_template(player_template)))
     apply_action(session, create_action(ActionType.CHOOSE_DUNGEON, {"dungeon_id": "dgn_test_simple"}))
     apply_action(session, create_action(ActionType.ABANDON))
 
@@ -165,7 +183,8 @@ def test_postgame_finish_resets_session_to_pregame():
 
 def test_game_session_serialization_round_trip_preserves_state_payloads():
     session, player_id = _build_session()
-    apply_action(session, create_action(ActionType.CREATE_PLAYER, {"entity_id": player_id, "player_instance_id": "plr_inst_01"}))
+    player_template = session.player_templates[player_id]
+    apply_action(session, create_action(ActionType.CREATE_PLAYER, _create_player_action_params_from_template(player_template)))
     apply_action(session, create_action(ActionType.CHOOSE_DUNGEON, {"dungeon_id": "dgn_test_simple"}))
     apply_action(session, create_action(ActionType.START))
     apply_action(session, create_action(ActionType.EXPLORE))
