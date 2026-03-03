@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from core.actions import Action
+from core.validation import validate_action_with_details
 from core.enums import ActionType, EventType, GameState
 from core.events import Event, create_event
 from core.states.encounter import handle_attack, handle_cast_spell, handle_end_turn
@@ -48,12 +49,7 @@ STATE_ACTIONS: Dict[GameState, set[ActionType]] = {
 
 
 def validate_action_for_state(session: GameSessionState, action: Action) -> List[str]:
-    legal_actions = set(STATE_ACTIONS.get(session.state, set())) | GLOBAL_ACTIONS
-    if action.type not in legal_actions:
-        return [
-            f"Action '{action.type.value}' is not legal in state '{session.state.value}'"
-        ]
-    return []
+    return validate_action_with_details(session, action).errors
 
 
 def apply_action(session: GameSessionState, action: Action) -> List[Event]:
