@@ -10,7 +10,7 @@ from core.states.session import GameSessionState, alive_enemies, alive_players
 
 
 def _initiative_modifier(actor: object) -> int:
-    value = getattr(actor, "initiative_modifier", 0)
+    value = getattr(actor, "initiative_mod", 0)
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -29,14 +29,14 @@ def resolve_start_encounter(session: GameSessionState, encounter, rng: random.Ra
         if not actor_instance_id:
             continue
 
-        modifier = _initiative_modifier(actor)
+        mod = _initiative_modifier(actor)
         roll = roll_d20(rng=rng)
-        total = roll + modifier
+        total = roll + mod
         initiative_rows.append(
             {
                 "actor_instance_id": actor_instance_id,
                 "roll": roll,
-                "modifier": modifier,
+                "modifier": mod,
                 "initiative": total,
                 "index": index,
             }

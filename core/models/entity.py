@@ -183,7 +183,7 @@ class Entity:
 	AC: int
 	spell_slots: int
 	max_spell_slots: int
-	initiative_modifier: int = 0
+	initiative_mod: int = 0
 	active_status_effects: List[StatusEffectInstance] = field(default_factory=list)
 	weapons: List[Weapon] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
@@ -251,7 +251,7 @@ class Entity:
 			"max_hp": self.max_hp,
 			"base_AC": self.base_AC,
 			"max_spell_slots": self.max_spell_slots,
-			"initiative_modifier": self.initiative_modifier,
+			"initiative_mod": self.initiative_mod,
 			"active_status_effects": [
 				status_effect.to_ref() for status_effect in self.active_status_effects
 			],
@@ -286,7 +286,7 @@ class Entity:
 		spell_slots_default = race_model.base_spell_slots + archetype_model.spell_slot_mod
 		max_hp_default = hp_default
 		max_spell_slots_default = spell_slots_default
-		initiative_modifier_default = archetype_model.initiative_modifier
+		initiative_mod_default = archetype_model.initiative_mod
 
 		return cls(
 			id=id,
@@ -301,7 +301,7 @@ class Entity:
 			base_AC=ac_default,
 			spell_slots=spell_slots_default,
 			max_spell_slots=max_spell_slots_default,
-			initiative_modifier=initiative_modifier_default,
+			initiative_mod=initiative_mod_default,
 			active_status_effects=active_status_effects_model,
 		)
 
@@ -320,7 +320,7 @@ class Entity:
 		spell_slots_default = race_model.base_spell_slots + archetype_model.spell_slot_mod
 		max_hp_default = hp_default
 		max_spell_slots_default = spell_slots_default
-		initiative_modifier_default = archetype_model.initiative_modifier
+		initiative_mod_default = archetype_model.initiative_mod
 		max_spell_slots_value = data.get(
 			"max_spell_slots",
 			data.get("max_spelll_slots", max_spell_slots_default),
@@ -339,7 +339,7 @@ class Entity:
 			AC=_get_int(data.get("AC", ac_default)),
 			spell_slots=_get_int(data.get("spell_slots", spell_slots_default)),
 			max_spell_slots=_get_int(max_spell_slots_value),
-			initiative_modifier=_get_int(data.get("initiative_modifier", initiative_modifier_default)),
+			initiative_mod=_get_int(data.get("initiative_mod", initiative_mod_default)),
 			active_status_effects=_parse_active_status_effects(
 				data.get("active_status_effects", data.get("status_effects", []))
 			),
