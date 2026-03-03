@@ -70,7 +70,7 @@ REQUIRED_PARAMETERS: Dict[ActionType, List[str]] = {
 	ActionType.CAST_SPELL: ["spell_id", "target_instance_ids"],
 	ActionType.END_TURN: [],
 	ActionType.START: [],
-	ActionType.CREATE_PLAYER: ["entity_id"],
+	ActionType.CREATE_PLAYER: ["name", "description", "race", "archetype", "weapons"],
 	ActionType.REMOVE_PLAYER: ["player_instance_id"],
 	ActionType.CHOOSE_DUNGEON: ["dungeon_id"],
 	ActionType.FINISH: [],
