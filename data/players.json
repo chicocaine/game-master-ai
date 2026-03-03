@@ -12,6 +12,7 @@
     "AC": 13,
     "spell_slots": 1,
     "max_spell_slots": 1,
+    "initiative_mod": 1,
     "active_status_effects": [],
     "known_attacks": [],
     "known_spells": [],

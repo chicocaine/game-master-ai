@@ -150,6 +150,13 @@ def test_encounter_state_and_back_to_exploration_after_kill():
     assert session.encounter.active_encounter_id == "enc_test_01"
 
     player_attack_id = session.party[0].merged_attacks[0].id
+    player_actor_id = session.party[0].player_instance_id
+
+    for _ in range(len(session.encounter.turn_order)):
+        current_actor = session.encounter.turn_order[session.encounter.current_turn_index]
+        if current_actor == player_actor_id:
+            break
+        apply_action(session, create_action(ActionType.END_TURN, actor_instance_id=current_actor))
 
     attack = create_action(
         ActionType.ATTACK,

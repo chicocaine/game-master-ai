@@ -50,6 +50,7 @@ def _base_entity_payload():
 			"hp_mod": 2,
 			"AC_mod": 1,
 			"spell_slot_mod": 1,
+			"initiative_mod": 3,
 			"resistances": [],
 			"immunities": [],
 			"vulnerabilities": [],
@@ -129,6 +130,7 @@ def test_create_player_sets_player_instance_id_and_defaults():
 	assert player.hp == 12
 	assert player.AC == 12
 	assert player.spell_slots == 2
+	assert player.initiative_mod == 3
 
 
 def test_create_enemy_sets_enemy_instance_id_and_defaults():
@@ -148,6 +150,7 @@ def test_create_enemy_sets_enemy_instance_id_and_defaults():
 	assert enemy.hp == 12
 	assert enemy.AC == 12
 	assert enemy.spell_slots == 2
+	assert enemy.initiative_mod == 3
 
 
 def test_create_enemy_sets_persona():

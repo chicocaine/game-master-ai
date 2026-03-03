@@ -17,6 +17,7 @@
     "AC",
     "spell_slots",
     "max_spell_slots",
+    "initiative_mod",
     "active_status_effects",
     "known_attacks",
     "known_spells",
@@ -41,6 +42,7 @@
     "AC": { "type": "integer" },
     "spell_slots": { "type": "integer", "minimum": 0 },
     "max_spell_slots": { "type": "integer", "minimum": 0 },
+    "initiative_mod": { "type": "integer" },
     "active_status_effects": {
       "type": "array",
       "items": { "$ref": "#/$defs/statusEffectReference" }

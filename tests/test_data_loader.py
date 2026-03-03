@@ -120,6 +120,7 @@ def test_create_player_from_ids_sets_instance_id_and_defaults():
     assert player.player_instance_id == "player_inst_01"
     assert player.hp == 16
     assert player.AC == 13
+    assert player.initiative_mod == 1
     assert [weapon.id for weapon in player.weapons] == ["wpn_longsword_01"]
 
 
@@ -138,6 +139,7 @@ def test_create_enemy_from_ids_sets_instance_id_and_defaults():
     assert enemy.enemy_instance_id == "enemy_inst_01"
     assert enemy.hp == 16
     assert enemy.AC == 13
+    assert enemy.initiative_mod == 1
     assert [weapon.id for weapon in enemy.weapons] == ["wpn_longsword_01"]
 
 
@@ -159,6 +161,7 @@ def test_load_player_templates_returns_entity_records_without_instance_ids():
     assert player_template.id == "ent_human_warrior_01"
     assert player_template.race.id == "race_human_01"
     assert player_template.archetype.id == "arc_warrior_01"
+    assert player_template.initiative_mod == 1
     assert [weapon.id for weapon in player_template.weapons] == ["wpn_longsword_01"]
     assert not hasattr(player_template, "player_instance_id")
 
@@ -171,6 +174,7 @@ def test_load_enemy_templates_returns_entity_records_without_instance_ids():
     assert enemy_template.id == "ent_fireborn_sage_01"
     assert enemy_template.race.id == "race_fireborn_01"
     assert enemy_template.archetype.id == "arc_sage_01"
+    assert enemy_template.initiative_mod == 2
     assert [weapon.id for weapon in enemy_template.weapons] == ["wpn_staff_01"]
     assert not hasattr(enemy_template, "enemy_instance_id")
 
