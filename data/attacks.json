@@ -8,6 +8,7 @@
       "damage_types": ["slashing"],
       "magnitude": "1d8+3",
       "hit_modifiers": 2,
+      "DC": 0,
       "applied_status_effects": []
     }
   },
@@ -20,6 +21,7 @@
       "damage_types": ["piercing"],
       "magnitude": "1d6+2",
       "hit_modifiers": 1,
+      "DC": 13,
       "applied_status_effects": [["se_dot_fire_01", 3]]
     }
   },
@@ -32,6 +34,7 @@
       "damage_types": ["bludgeoning"],
       "magnitude": "1d4+1",
       "hit_modifiers": 0,
+      "DC": 12,
       "applied_status_effects": [["se_ctrl_01", 1]]
     }
   }

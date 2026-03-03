@@ -23,6 +23,10 @@ def test_load_catalog_resolves_id_references():
 
     fire_arrow = catalog.attacks["atk_fire_arrow_01"]
     assert [effect.id for effect in fire_arrow.applied_status_effects] == ["se_dot_fire_01"]
+    assert fire_arrow.DC == 13
+
+    heal_touch = catalog.spells["spl_heal_touch_01"]
+    assert heal_touch.DC == 0
 
     staff = catalog.weapons["wpn_staff_01"]
     assert [spell.id for spell in staff.known_spells] == ["spl_fire_bolt_01", "spl_heal_touch_01"]

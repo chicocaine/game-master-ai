@@ -9,6 +9,7 @@
       "magnitude": "1d10",
       "damage_types": ["fire"],
       "hit_modifiers": 3,
+      "DC": 13,
       "applied_status_effects": [["se_dot_fire_01", 3]]
     }
   },
@@ -22,6 +23,7 @@
       "magnitude": "1d8+2",
       "damage_types": [],
       "hit_modifiers": 0,
+      "DC": 0,
       "applied_status_effects": [["se_hot_01", 3]]
     }
   },
@@ -35,6 +37,7 @@
       "magnitude": "1d6",
       "damage_types": ["thunder"],
       "hit_modifiers": 1,
+      "DC": 14,
       "applied_status_effects": [["se_ctrl_01", 1]]
     }
   }
@@ -49,6 +52,7 @@
         "magnitude": "1d6+1",
         "damage_types": [],
         "hit_modifiers": 0,
+        "DC": 0,
         "applied_status_effects": [["se_hot_01", 2]]
       }
     }

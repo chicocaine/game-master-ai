@@ -40,7 +40,8 @@
         "magnitude",
         "damage_types",
         "applied_status_effects",
-        "hit_modifiers"
+        "hit_modifiers",
+        "DC"
       ],
       "properties": {
         "magnitude": { "type": "string", "minLength": 1 },
@@ -52,7 +53,8 @@
           "type": "array",
           "items": { "$ref": "#/$defs/statusEffectReference" }
         },
-        "hit_modifiers": { "type": "integer" }
+        "hit_modifiers": { "type": "integer" },
+        "DC": { "type": "integer", "minimum": 0 }
       },
       "additionalProperties": false
     }

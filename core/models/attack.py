@@ -58,12 +58,14 @@ def _normalize_parameters(data: dict) -> Dict[str, Any]:
 	damage_types_source = parameters.get("damage_types", [])
 	magnitude_source = parameters.get("magnitude", "")
 	hit_modifiers_source = parameters.get("hit_modifiers", 0)
+	dc_source = parameters.get("DC", 0)
 	applied_effects_source = parameters.get("applied_status_effects", [])
 
 	return {
 		"damage_types": _parse_damage_types(damage_types_source),
 		"magnitude": _get_str({"magnitude": magnitude_source}, "magnitude"),
 		"hit_modifiers": _get_int(hit_modifiers_source),
+		"DC": _get_int(dc_source),
 		"applied_status_effects": _parse_applied_status_effects(applied_effects_source),
 	}
 
@@ -72,12 +74,14 @@ def _serialize_parameters(parameters: Dict[str, Any]) -> Dict[str, Any]:
 	damage_types = _parse_damage_types(parameters.get("damage_types", []))
 	magnitude = _get_str({"magnitude": parameters.get("magnitude", "")}, "magnitude")
 	hit_modifiers = _get_int(parameters.get("hit_modifiers", 0))
+	dc = _get_int(parameters.get("DC", 0))
 	applied_status_effects = _parse_applied_status_effects(parameters.get("applied_status_effects", []))
 
 	return {
 		"damage_types": [damage_type.value for damage_type in damage_types],
 		"magnitude": magnitude,
 		"hit_modifiers": hit_modifiers,
+		"DC": dc,
 		"applied_status_effects": [
 			status_effect.to_ref() for status_effect in applied_status_effects
 		],
@@ -103,6 +107,10 @@ class Attack:
 	@property
 	def hit_modifiers(self) -> int:
 		return _get_int(self.parameters.get("hit_modifiers", 0))
+
+	@property
+	def DC(self) -> int:
+		return _get_int(self.parameters.get("DC", 0))
 
 	@property
 	def applied_status_effects(self) -> List[StatusEffectInstance]:
