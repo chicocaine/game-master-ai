@@ -2,6 +2,8 @@
 
 > Detailed implementation reference covering architecture, game state, engine loops, LLM integration, and evaluation.
 
+> Canonical gameplay rules are documented in `docs/RULES.md`; rule statements in this document must remain consistent with that file.
+
 ---
 
 ## Table of Contents
@@ -307,9 +309,9 @@ while state == EXPLORATION:
 ```
 
 **Resolution details:**
-- `move`: validates `destination_room_id` is connected to current room. Emits `ROOM_ENTERED`. Sets `is_visited = True`. If the destination room has uncleared encounters, transitions to ENCOUNTER.
+- `move`: validates `destination_room_id` is connected to current room and requires the current room to be cleared before movement is allowed. Emits `ROOM_ENTERED`. Sets `is_visited = True`. If the destination room has uncleared encounters, transitions to ENCOUNTER.
 - `explore`: reveals room details; emits `ROOM_EXPLORED`.
-- `rest`: checks `room.allowed_rests` contains the requested `rest_type`. Short rest restores partial HP; long rest restores full HP and spell slots. Emits `REST_STARTED` → `REST_COMPLETED`. Sets `room.is_rested = True` (prevents re-resting).
+- `rest`: checks `room.allowed_rests` contains the requested `rest_type`. Short restores partial HP and partial spell slots. Long rest restores full HP and full spell slots and may revive a downed entity (`hp == 0`). Short rest cannot revive a downed entity. Emits `REST_STARTED` → `REST_COMPLETED`. Sets `room.is_rested = True` (prevents re-resting).
 
 #### Encounter Sub-Loop (Turn-Based Combat)
 
@@ -377,12 +379,14 @@ while state == ENCOUNTER:
 The `EnemyAILLM` responds with the same `Action` JSON schema as the player action parser. The `actor_instance_id` is set to the enemy's `instance_id`. If the response fails to parse or fails validation, `fallback_enemy_action` selects the first available attack targeting the lowest-HP player.
 
 **Attack resolution:**
-1. Roll attack: `d20 + hit_modifiers` vs. target `AC`.
+1. Roll attack: `d20 + hit_modifiers` vs. target `AC` or if attack difficulty class `DC` is greater than `0`, the `target_entity` will perform a `d20` saving throw. If the saving throw is equal to or greater than the difficulty class of the attack, the saving throw will succeed and the attack will fail.
 2. On hit: roll damage using weapon/attack damage expression. Apply resistance/immunity/vulnerability multipliers.
 3. Deduct HP. Emit `ATTACK_HIT` or `ATTACK_MISSED`, `DAMAGE_APPLIED`, `HP_UPDATED`, `DEATH` if applicable.
 4. Apply `applied_status_effects` from the attack on hit.
 
-**Spell resolution:** Same hit roll mechanic. AOE spells resolve against each target in `target_instance_ids`. Heal spells skip the hit roll. Emit `SPELL_CAST`, then per-target events.
+**Spell resolution:** If spell difficulty class `DC` is `0`, the spell will succeed no matter what, else the `target_entity` will make a `d20` saving throw. AOE spells resolve against each target in `target_instance_ids`. Heal spells skip the hit roll. Emit `SPELL_CAST`, then per-target events.
+
+**Status effect resolution:** DoT and HoT `StatusEffectType` are resolved every turn. Control `StatusEffectType` are checked at the start of each turn. AC modifier `StatusEffectType` update the entity's `AC` at application, and returns back to `base_AC` when the status effect is removed. Immunities, Resistances and Vulnerabilities are checked during damage resolutions. 
 
 **Status effect tick:** At end of each actor's turn, the duration of all `active_status_effects` is decremented by 1. Effects at 0 are removed and `STATUS_EFFECT_REMOVED` is emitted.
 
@@ -433,7 +437,7 @@ Assembles the context payload for each LLM call from current game state. Every s
 
 | Priority | Section | Contents |
 |----------|---------|----------|
-| 1 | `current_state` | Game state enum, current room id, turn index |
+| 1 | `current_state` | Game state enum, current room id, turn index, round index |
 | 2 | `party` | Per-player: name, hp/max_hp, spell_slots/max, active status effects, available actions |
 | 3 | `current_room` | Room name, description, connections, encounter status |
 | 4 | `rules_summary` | Legal actions for current state and their required parameters |
@@ -540,7 +544,7 @@ validate_action(action)  → List[str] errors
     └─ no errors → emit ACTION_VALIDATED event, return Action
 ```
 
-**Failure handling:** If the LLM output is not parseable JSON after N retries, the turn is skipped and an `ERROR` event is emitted. The player sees a neutral message like "I didn't quite catch that — could you rephrase?"
+**Failure handling:** If the LLM output is not parseable JSON after N retries, an `ERROR` event is emitted and the engine re-prompts the same actor without advancing turn order.
 
 ### 5.2 Query and Conversation Responder
 
