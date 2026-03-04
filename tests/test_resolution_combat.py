@@ -9,6 +9,7 @@ from core.models.status_effect import StatusEffectDefinition, StatusEffectInstan
 from core.registry.enemy_registry import load_enemy_model_registry
 from core.registry.player_registry import load_player_registry
 from core.resolution.combat import calculate_damage_multiplier, resolve_attack_action, resolve_cast_spell_action
+from core.resolution.status_effects import apply_status_effect_to_actor
 from core.states.session import GameSessionState
 
 
@@ -109,6 +110,48 @@ def test_resolve_attack_applies_resistance_multiplier(monkeypatch):
     assert enemy.hp == 16
 
 
+def test_resolve_attack_applies_active_status_effect_resistance_multiplier(monkeypatch):
+    session, enemy = _build_encounter_session()
+
+    attack = Attack(
+        id="atk_test_fire_active_res",
+        name="Fire Hit",
+        description="test",
+        type=AttackType.MELEE,
+        parameters={"damage_types": [DamageType.FIRE], "magnitude": "1d8", "hit_modifiers": 2, "DC": 0, "applied_status_effects": []},
+    )
+    session.party[0].known_attacks.append(attack)
+    enemy.active_status_effects = [
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_res_fire_active",
+                name="Active Fire Ward",
+                description="active resistance",
+                type=StatusEffectType.RESISTANCE,
+                parameters={"damage_type": DamageType.FIRE.value},
+            ),
+            duration=2,
+        )
+    ]
+
+    monkeypatch.setattr("core.resolution.combat.roll_d20", lambda: 18)
+    monkeypatch.setattr(
+        "core.resolution.combat.roll_dice",
+        lambda expr: RollResult(total=8, rolls=[8], modifier=0, expression=expr),
+    )
+
+    action = create_action(
+        ActionType.ATTACK,
+        {"attack_id": attack.id, "target_instance_ids": [enemy.enemy_instance_id]},
+        actor_instance_id=session.party[0].player_instance_id,
+    )
+    events = resolve_attack_action(session, session.dungeon.rooms[0].encounters[0], action)
+
+    damage_event = next(item for item in events if item.type.value == "damage_applied")
+    assert damage_event.payload["amount"] == 4
+    assert enemy.hp == 16
+
+
 def test_resolve_attack_uses_save_vs_dc_and_can_miss(monkeypatch):
     session, enemy = _build_encounter_session()
 
@@ -178,6 +221,96 @@ def test_resolve_attack_applies_status_effects_on_hit(monkeypatch):
 
     assert any(item.type.value == "status_effect_applied" for item in events)
     assert any(item.id == "se_test_dot" for item in enemy.active_status_effects)
+
+
+def test_attack_modifier_status_effect_increases_attack_roll(monkeypatch):
+    session, enemy = _build_encounter_session()
+
+    attack = Attack(
+        id="atk_test_attack_mod_status",
+        name="Status Boosted Attack",
+        description="test",
+        type=AttackType.MELEE,
+        parameters={"damage_types": [DamageType.SLASHING], "magnitude": "1d4", "hit_modifiers": 0, "DC": 0, "applied_status_effects": []},
+    )
+    session.party[0].known_attacks.append(attack)
+    apply_status_effect_to_actor(
+        session.party[0],
+        session.party[0].player_instance_id,
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_atk_mod_buff",
+                name="Battle Focus",
+                description="attack up",
+                type=StatusEffectType.ATKMOD,
+                parameters={"value": 3},
+            ),
+            duration=2,
+        ),
+    )
+    enemy.AC = 13
+
+    monkeypatch.setattr("core.resolution.combat.roll_d20", lambda: 10)
+    monkeypatch.setattr(
+        "core.resolution.combat.roll_dice",
+        lambda expr: RollResult(total=3, rolls=[3], modifier=0, expression=expr),
+    )
+
+    action = create_action(
+        ActionType.ATTACK,
+        {"attack_id": attack.id, "target_instance_ids": [enemy.enemy_instance_id]},
+        actor_instance_id=session.party[0].player_instance_id,
+    )
+    events = resolve_attack_action(session, session.dungeon.rooms[0].encounters[0], action)
+
+    dice_event = next(item for item in events if item.type.value == "dice_rolled")
+    assert dice_event.payload["status_effect_hit_modifiers"] == 3
+    assert dice_event.payload["total_hit_modifiers"] == 3
+    assert any(item.type.value == "attack_hit" for item in events)
+
+
+def test_ac_modifier_status_effect_increases_target_ac(monkeypatch):
+    session, enemy = _build_encounter_session()
+
+    attack = Attack(
+        id="atk_test_target_ac_mod",
+        name="Against AC Buff",
+        description="test",
+        type=AttackType.MELEE,
+        parameters={"damage_types": [DamageType.SLASHING], "magnitude": "1d4", "hit_modifiers": 2, "DC": 0, "applied_status_effects": []},
+    )
+    session.party[0].known_attacks.append(attack)
+    enemy.AC = 12
+    enemy.base_AC = 12
+    apply_status_effect_to_actor(
+        enemy,
+        enemy.enemy_instance_id,
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_ac_mod_buff",
+                name="Stone Skin",
+                description="ac up",
+                type=StatusEffectType.ACMOD,
+                parameters={"value": 2},
+            ),
+            duration=2,
+        ),
+    )
+
+    monkeypatch.setattr("core.resolution.combat.roll_d20", lambda: 10)
+
+    action = create_action(
+        ActionType.ATTACK,
+        {"attack_id": attack.id, "target_instance_ids": [enemy.enemy_instance_id]},
+        actor_instance_id=session.party[0].player_instance_id,
+    )
+    events = resolve_attack_action(session, session.dungeon.rooms[0].encounters[0], action)
+
+    dice_event = next(item for item in events if item.type.value == "dice_rolled")
+    assert dice_event.payload["target_base_ac"] == 12
+    assert dice_event.payload["target_ac"] == 14
+    assert any(item.type.value == "attack_missed" for item in events)
+    assert all(item.type.value != "damage_applied" for item in events)
 
 
 def test_single_target_attack_rejects_multiple_targets():
@@ -270,6 +403,7 @@ def test_heal_spell_restores_hp_and_spends_slots(monkeypatch):
     assert any(item.type.value == "healing_applied" for item in events)
     mana_event = next(item for item in events if item.type.value == "mana_updated")
     assert mana_event.payload["spell_slots"] == session.party[0].spell_slots
+    assert mana_event.payload["mana"] == session.party[0].spell_slots
 
 
 def test_attack_spell_uses_save_vs_dc_and_can_miss(monkeypatch):

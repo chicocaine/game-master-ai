@@ -10,10 +10,12 @@ from core.events import Event, create_event
 from core.models.status_effect import StatusEffectInstance
 from core.rules import normalize_target_ids, resolve_actor
 from core.resolution.status_effects import (
+    apply_status_effect_to_actor,
     is_entity_asleep,
     is_entity_restrained,
     is_entity_silenced,
     is_entity_stunned,
+    remove_status_effect_from_actor,
     remove_negative_status_effects_from_actor,
 )
 from core.states.session import (
@@ -46,18 +48,11 @@ def calculate_damage_multiplier(
 
 def _apply_status_effects_on_hit(target, status_effects: List[StatusEffectInstance], events: List[Event], target_id: str) -> None:
     for effect in status_effects:
-        target.active_status_effects.append(
-            StatusEffectInstance(status_effect=effect.status_effect, duration=effect.duration)
-        )
-        events.append(
-            create_event(
-                EventType.STATUS_EFFECT_APPLIED,
-                "status_effect_applied",
-                {
-                    "target_instance_id": target_id,
-                    "status_effect_id": effect.id,
-                    "duration": effect.duration,
-                },
+        events.extend(
+            apply_status_effect_to_actor(
+                target,
+                target_id,
+                StatusEffectInstance(status_effect=effect.status_effect, duration=effect.duration),
             )
         )
 
@@ -157,16 +152,7 @@ def _remove_status_effects_from_target(target, effect_ids: set[str], events: Lis
         if effect_ids and effect.id not in effect_ids:
             remaining_effects.append(effect)
             continue
-        events.append(
-            create_event(
-                EventType.STATUS_EFFECT_REMOVED,
-                "status_effect_removed",
-                {
-                    "actor_instance_id": target_id,
-                    "status_effect_id": effect.id,
-                },
-            )
-        )
+        events.append(remove_status_effect_from_actor(target, target_id, effect))
     target.active_status_effects = remaining_effects
 
 
@@ -270,7 +256,9 @@ def resolve_attack_action(session: GameSessionState, encounter, action: Action) 
             )
             is_hit = save_roll < attack.DC
         else:
-            attack_roll = roll_d20() + attack.hit_modifiers
+            total_hit_modifiers = attack.hit_modifiers + actor.attack_modifier_bonus
+            effective_target_ac = target.effective_ac
+            attack_roll = roll_d20() + total_hit_modifiers
             events.append(
                 create_event(
                     EventType.DICE_ROLLED,
@@ -280,12 +268,15 @@ def resolve_attack_action(session: GameSessionState, encounter, action: Action) 
                         "target_instance_id": target_id,
                         "roll_type": "attack_roll",
                         "roll": attack_roll,
-                        "target_ac": target.AC,
+                        "target_ac": effective_target_ac,
+                        "target_base_ac": target.base_AC,
                         "hit_modifiers": attack.hit_modifiers,
+                        "status_effect_hit_modifiers": actor.attack_modifier_bonus,
+                        "total_hit_modifiers": total_hit_modifiers,
                     },
                 )
             )
-            is_hit = attack_roll >= target.AC
+            is_hit = attack_roll >= effective_target_ac
 
         if not is_hit:
             events.append(
@@ -356,6 +347,7 @@ def resolve_cast_spell_action(session: GameSessionState, encounter, action: Acti
             {
                 "actor_instance_id": action.actor_instance_id,
                 "spell_slots": caster.spell_slots,
+                "mana": caster.spell_slots,
             },
         )
     )

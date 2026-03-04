@@ -76,7 +76,10 @@ def resolve_rest_action(session: GameSessionState, action: Action) -> List[Event
             player.hp = player.max_hp
             player.spell_slots = player.max_spell_slots
         else:
-            player.hp = min(player.max_hp, player.hp + max(1, player.max_hp // 2))
+            if player.hp > 0:
+                player.hp = min(player.max_hp, player.hp + max(1, player.max_hp // 2))
+            spell_slot_recovery = max(0, player.max_spell_slots // 2)
+            player.spell_slots = min(player.max_spell_slots, player.spell_slots + spell_slot_recovery)
 
     current_room.is_rested = True
     return [

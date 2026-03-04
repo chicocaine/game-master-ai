@@ -18,6 +18,18 @@ def _get_dict(data: dict, key: str) -> Dict[str, Any]:
 
 def _normalize_action_parameters(action_type: ActionType, parameters: Dict[str, Any]) -> Dict[str, Any]:
 	normalized = dict(parameters)
+	if action_type == ActionType.ATTACK:
+		if "target_instance_ids" not in normalized and "target_instance_id" in normalized:
+			normalized["target_instance_ids"] = normalized["target_instance_id"]
+
+	if action_type == ActionType.CREATE_PLAYER:
+		if "race" not in normalized and "race_id" in normalized:
+			normalized["race"] = normalized["race_id"]
+		if "archetype" not in normalized and "archetype_id" in normalized:
+			normalized["archetype"] = normalized["archetype_id"]
+		if "weapons" not in normalized and "weapon_ids" in normalized:
+			normalized["weapons"] = normalized["weapon_ids"]
+
 	if action_type == ActionType.CONVERSE and "message" in normalized:
 		normalized["message"] = str(normalized["message"]).strip()
 	return normalized
@@ -92,15 +104,15 @@ def validate_action(action: Action) -> List[str]:
 		if not str(action.parameters["message"]).strip():
 			errors.append("Parameter 'message' for action 'converse' cannot be blank")
 
-	if action.type == ActionType.ATTACK and "target_instance_id" in action.parameters:
-		targets = action.parameters["target_instance_id"]
+	if action.type == ActionType.ATTACK and "target_instance_ids" in action.parameters:
+		targets = action.parameters["target_instance_ids"]
 		if not isinstance(targets, (str, list)):
-			errors.append("Parameter 'target_instance_id' for action 'attack' must be string or list of strings")
+			errors.append("Parameter 'target_instance_ids' for action 'attack' must be string or list of strings")
 		elif isinstance(targets, list):
 			if not targets or any(not isinstance(target, str) or not target.strip() for target in targets):
-				errors.append("Parameter 'target_instance_id' for action 'attack' list must contain non-blank strings")
+				errors.append("Parameter 'target_instance_ids' for action 'attack' list must contain non-blank strings")
 		elif not targets.strip():
-			errors.append("Parameter 'target_instance_id' for action 'attack' cannot be blank")
+			errors.append("Parameter 'target_instance_ids' for action 'attack' cannot be blank")
 
 	if action.type == ActionType.CAST_SPELL and "target_instance_ids" in action.parameters:
 		targets = action.parameters["target_instance_ids"]

@@ -1,9 +1,10 @@
-from core.enums import DifficultyType, GameState, StatusEffectType
+from core.enums import DamageType, DifficultyType, GameState, StatusEffectType
 from core.models.dungeon import Dungeon, Encounter, Room
 from core.models.enemy import Enemy
 from core.models.status_effect import StatusEffectDefinition, StatusEffectInstance
 from core.registry.enemy_registry import load_enemy_model_registry
 from core.resolution.status_effects import (
+    apply_status_effect_to_actor,
     is_entity_asleep,
     is_entity_restrained,
     is_entity_silenced,
@@ -69,7 +70,7 @@ def test_tick_dot_and_hot_apply_values_and_remove_on_expire():
             name="Burn",
             description="dot",
             type=StatusEffectType.DOT,
-            parameters={"value": 4, "damage_type": "fire"},
+            parameters={"value": 4, "damage_type": DamageType.FORCE.value},
         ),
         duration=1,
     )
@@ -195,3 +196,158 @@ def test_control_placeholders_detect_control_types():
     assert is_entity_silenced(enemy) is True
     assert is_entity_asleep(enemy) is True
     assert is_entity_restrained(enemy) is True
+
+
+def test_tick_dot_respects_active_immunity_status_effect():
+    session, enemy = _encounter_session_with_enemy()
+    enemy.hp = 20
+
+    enemy.active_status_effects = [
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_dot_fire",
+                name="Burn",
+                description="dot",
+                type=StatusEffectType.DOT,
+                parameters={"value": 7, "damage_type": DamageType.FIRE.value},
+            ),
+            duration=1,
+        ),
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_immunity_fire",
+                name="Fire Immunity",
+                description="immune",
+                type=StatusEffectType.IMMUNITY,
+                parameters={"damage_type": DamageType.FIRE.value},
+            ),
+            duration=2,
+        ),
+    ]
+
+    events = tick_status_effects_for_actor(session, enemy.enemy_instance_id)
+
+    damage_event = next(item for item in events if item.type.value == "damage_applied")
+    assert damage_event.payload["amount"] == 0
+    assert enemy.hp == 20
+
+
+def test_tick_dot_respects_active_vulnerability_status_effect():
+    session, enemy = _encounter_session_with_enemy()
+    enemy.hp = 20
+
+    enemy.active_status_effects = [
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_dot_fire",
+                name="Burn",
+                description="dot",
+                type=StatusEffectType.DOT,
+                parameters={"value": 4, "damage_type": DamageType.FORCE.value},
+            ),
+            duration=1,
+        ),
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_vulnerable_fire",
+                name="Fire Vulnerable",
+                description="vulnerable",
+                type=StatusEffectType.VULNERABLE,
+                parameters={"damage_type": DamageType.FORCE.value},
+            ),
+            duration=2,
+        ),
+    ]
+
+    events = tick_status_effects_for_actor(session, enemy.enemy_instance_id)
+
+    damage_event = next(item for item in events if item.type.value == "damage_applied")
+    assert damage_event.payload["amount"] == 8
+    assert enemy.hp == 12
+
+
+def test_ac_modifier_overwrite_replaces_existing_effect_and_updates_ac():
+    _, enemy = _encounter_session_with_enemy()
+    base_ac = enemy.AC
+
+    first = StatusEffectInstance(
+        status_effect=StatusEffectDefinition(
+            id="se_ac_mod_first",
+            name="Stone Skin I",
+            description="ac",
+            type=StatusEffectType.ACMOD,
+            parameters={"value": 2},
+        ),
+        duration=2,
+    )
+    second = StatusEffectInstance(
+        status_effect=StatusEffectDefinition(
+            id="se_ac_mod_second",
+            name="Stone Skin II",
+            description="ac",
+            type=StatusEffectType.ACMOD,
+            parameters={"value": 5},
+        ),
+        duration=2,
+    )
+
+    apply_status_effect_to_actor(enemy, enemy.enemy_instance_id, first)
+    events = apply_status_effect_to_actor(enemy, enemy.enemy_instance_id, second)
+
+    assert enemy.AC == base_ac + 5
+    assert [effect.id for effect in enemy.active_status_effects if effect.status_effect.type == StatusEffectType.ACMOD] == ["se_ac_mod_second"]
+    assert any(item.type.value == "status_effect_removed" for item in events)
+
+
+def test_ac_modifier_reverts_on_expiration_tick():
+    session, enemy = _encounter_session_with_enemy()
+    base_ac = enemy.AC
+
+    effect = StatusEffectInstance(
+        status_effect=StatusEffectDefinition(
+            id="se_ac_mod_expire",
+            name="Stone Skin",
+            description="ac",
+            type=StatusEffectType.ACMOD,
+            parameters={"value": 3},
+        ),
+        duration=1,
+    )
+    apply_status_effect_to_actor(enemy, enemy.enemy_instance_id, effect)
+
+    tick_status_effects_for_actor(session, enemy.enemy_instance_id)
+
+    assert enemy.AC == base_ac
+    assert all(item.id != "se_ac_mod_expire" for item in enemy.active_status_effects)
+
+
+def test_atk_modifier_overwrite_replaces_existing_effect_and_updates_bonus():
+    _, enemy = _encounter_session_with_enemy()
+
+    first = StatusEffectInstance(
+        status_effect=StatusEffectDefinition(
+            id="se_atk_mod_first",
+            name="Battle Focus I",
+            description="atk",
+            type=StatusEffectType.ATKMOD,
+            parameters={"value": 1},
+        ),
+        duration=2,
+    )
+    second = StatusEffectInstance(
+        status_effect=StatusEffectDefinition(
+            id="se_atk_mod_second",
+            name="Battle Focus II",
+            description="atk",
+            type=StatusEffectType.ATKMOD,
+            parameters={"value": 4},
+        ),
+        duration=2,
+    )
+
+    apply_status_effect_to_actor(enemy, enemy.enemy_instance_id, first)
+    events = apply_status_effect_to_actor(enemy, enemy.enemy_instance_id, second)
+
+    assert enemy.attack_modifier_bonus == 4
+    assert [effect.id for effect in enemy.active_status_effects if effect.status_effect.type == StatusEffectType.ATKMOD] == ["se_atk_mod_second"]
+    assert any(item.type.value == "status_effect_removed" for item in events)

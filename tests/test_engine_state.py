@@ -1,4 +1,5 @@
 from core.actions import create_action
+from core.dice import RollResult
 from core.enums import ActionType, DifficultyType, GameState, RestType
 from engine.game_state import GameSessionState, apply_action
 from core.models.dungeon import Dungeon, Encounter, Room
@@ -117,6 +118,25 @@ def test_pregame_to_exploration_move_and_rest_flow():
     assert all(event.type.value != "action_rejected" for event in move_events)
 
 
+def test_short_rest_does_not_revive_and_restores_partial_spell_slots():
+    session, player_id = _build_session()
+    player_template = session.player_templates[player_id]
+
+    apply_action(session, create_action(ActionType.CREATE_PLAYER, _create_player_action_params_from_template(player_template)))
+    apply_action(session, create_action(ActionType.CHOOSE_DUNGEON, {"dungeon_id": "dgn_test_simple"}))
+    apply_action(session, create_action(ActionType.START))
+
+    player = session.party[0]
+    player.hp = 0
+    player.spell_slots = 0
+
+    events = apply_action(session, create_action(ActionType.REST, {"rest_type": "short"}))
+
+    assert all(event.type.value != "action_rejected" for event in events)
+    assert player.hp == 0
+    assert player.spell_slots == max(0, player.max_spell_slots // 2)
+
+
 def test_move_rejected_for_unconnected_room():
     session, player_id = _build_session()
     player_template = session.player_templates[player_id]
@@ -129,7 +149,7 @@ def test_move_rejected_for_unconnected_room():
     assert any(event.type.value == "action_rejected" for event in events)
 
 
-def test_encounter_state_and_back_to_exploration_after_kill():
+def test_encounter_state_and_back_to_exploration_after_kill(monkeypatch):
     player_templates = load_player_registry("data")
     player_id = next(iter(player_templates.keys()))
     enemy_templates = load_enemy_model_registry("data")
@@ -166,6 +186,13 @@ def test_encounter_state_and_back_to_exploration_after_kill():
         },
         actor_instance_id="plr_inst_01",
     )
+
+    monkeypatch.setattr("core.resolution.combat.roll_d20", lambda: 20)
+    monkeypatch.setattr(
+        "core.resolution.combat.roll_dice",
+        lambda expr: RollResult(total=100, rolls=[100], modifier=0, expression=expr),
+    )
+
     apply_action(session, attack)
 
     assert session.state in {GameState.EXPLORATION, GameState.POSTGAME}

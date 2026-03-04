@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from core.enums import (
     DamageType,
+	StatusEffectType,
     WeaponProficiency,
     WeaponHandling,
     WeaponWeightClass,
@@ -39,6 +40,49 @@ def _parse_damage_type_list(value: Any) -> List[DamageType]:
 	for item in value:
 		parsed_types.append(_parse_damage_type(item))
 	return parsed_types
+
+
+def _status_effect_damage_type(effect: StatusEffectInstance) -> DamageType | None:
+	status_effect = getattr(effect, "status_effect", None)
+	if status_effect is None:
+		return None
+	parameters = getattr(status_effect, "parameters", {})
+	if not isinstance(parameters, dict):
+		return None
+	raw_damage_type = parameters.get("damage_type")
+	if raw_damage_type is None:
+		return None
+	try:
+		return _parse_damage_type(raw_damage_type)
+	except (TypeError, ValueError):
+		return None
+
+
+def _status_effect_value(effect: StatusEffectInstance) -> int:
+	status_effect = getattr(effect, "status_effect", None)
+	if status_effect is None:
+		return 0
+	parameters = getattr(status_effect, "parameters", {})
+	if not isinstance(parameters, dict):
+		return 0
+	raw_value = parameters.get("value", 0)
+	try:
+		return int(raw_value)
+	except (TypeError, ValueError):
+		return 0
+
+
+def _status_effect_type(effect: StatusEffectInstance) -> StatusEffectType | None:
+	status_effect = getattr(effect, "status_effect", None)
+	if status_effect is None:
+		return None
+	raw_type = getattr(status_effect, "type", None)
+	if isinstance(raw_type, StatusEffectType):
+		return raw_type
+	try:
+		return StatusEffectType(str(raw_type))
+	except (TypeError, ValueError):
+		return None
 
 
 def _parse_race(value: Any) -> Race:
@@ -184,6 +228,7 @@ class Entity:
 	spell_slots: int
 	max_spell_slots: int
 	initiative_mod: int = 0
+	attack_modifier_bonus: int = 0
 	active_status_effects: List[StatusEffectInstance] = field(default_factory=list)
 	weapons: List[Weapon] = field(default_factory=list)
 	known_attacks: List[Attack] = field(default_factory=list)
@@ -224,17 +269,53 @@ class Entity:
 	@property
 	def merged_resistances(self) -> List[DamageType]:
 		resistances = self.race.resistances + self.archetype.resistances + self.resistances
+		status_effect_resistances = [
+			damage_type
+			for effect in self.active_status_effects
+			if _status_effect_type(effect) == StatusEffectType.RESISTANCE
+			for damage_type in [_status_effect_damage_type(effect)]
+			if damage_type is not None
+		]
+		resistances += status_effect_resistances
 		return sorted(list(set(resistances)), key=lambda x: x.value)
 
 	@property
 	def merged_immunities(self) -> List[DamageType]:
 		immunities = self.race.immunities + self.archetype.immunities + self.immunities
+		status_effect_immunities = [
+			damage_type
+			for effect in self.active_status_effects
+			if _status_effect_type(effect) == StatusEffectType.IMMUNITY
+			for damage_type in [_status_effect_damage_type(effect)]
+			if damage_type is not None
+		]
+		immunities += status_effect_immunities
 		return sorted(list(set(immunities)), key=lambda x: x.value)
 
 	@property
 	def merged_vulnerabilities(self) -> List[DamageType]:
 		vulnerabilities = self.race.vulnerabilities + self.archetype.vulnerabilities + self.vulnerabilities
+		status_effect_vulnerabilities = [
+			damage_type
+			for effect in self.active_status_effects
+			if _status_effect_type(effect) == StatusEffectType.VULNERABLE
+			for damage_type in [_status_effect_damage_type(effect)]
+			if damage_type is not None
+		]
+		vulnerabilities += status_effect_vulnerabilities
 		return sorted(list(set(vulnerabilities)), key=lambda x: x.value)
+
+	@property
+	def merged_attack_modifier(self) -> int:
+		return self.attack_modifier_bonus
+
+	@property
+	def merged_ac_modifier(self) -> int:
+		return self.AC - self.base_AC
+
+	@property
+	def effective_ac(self) -> int:
+		return max(0, self.AC)
 
 	def to_dict(self) -> dict:
 		return {

@@ -67,3 +67,31 @@ def test_cast_spell_accepts_target_instance_ids_string_or_list():
 
 	assert validate_action(action_single) == []
 	assert validate_action(action_multi) == []
+
+
+def test_attack_legacy_target_instance_id_is_normalized():
+	action = create_action(
+		action_type=ActionType.ATTACK,
+		parameters={"attack_id": "atk_longsword_01", "target_instance_id": "enm_inst_01"},
+	)
+
+	assert action.parameters["target_instance_ids"] == "enm_inst_01"
+	assert validate_action(action) == []
+
+
+def test_create_player_id_aliases_are_normalized():
+	action = create_action(
+		action_type=ActionType.CREATE_PLAYER,
+		parameters={
+			"name": "Araniel",
+			"description": "A disciplined knight",
+			"race_id": "human",
+			"archetype_id": "warrior",
+			"weapon_ids": ["wpn_longsword_01"],
+		},
+	)
+
+	assert action.parameters["race"] == "human"
+	assert action.parameters["archetype"] == "warrior"
+	assert action.parameters["weapons"] == ["wpn_longsword_01"]
+	assert validate_action(action) == []
