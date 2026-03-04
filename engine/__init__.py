@@ -8,6 +8,8 @@ from engine.game_state import (
     build_postgame_summary,
     validate_action_for_state,
 )
+from engine.game_loop import GameLoop, LoopTurnResult
+from engine.state_manager import EngineStateManager, SessionTemplates
 
 __all__ = [
     "PreGameStateData",
@@ -18,4 +20,8 @@ __all__ = [
     "validate_action_for_state",
     "apply_action",
     "build_postgame_summary",
+    "GameLoop",
+    "LoopTurnResult",
+    "EngineStateManager",
+    "SessionTemplates",
 ]
