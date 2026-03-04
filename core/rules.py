@@ -4,7 +4,7 @@ from dataclasses import dataclass, field as dataclass_field
 from typing import Dict, Iterable, List, Optional, Set
 
 from core.actions import Action
-from core.enums import ActionType, GameState, RestType
+from core.enums import ActionType, ControlType, GameState, RestType, StatusEffectType
 from core.models.dungeon import Encounter, Room
 from core.models.enemy import Enemy
 from core.models.player import Player
@@ -15,6 +15,48 @@ from core.states.session import (
 	first_uncleared_encounter,
 	get_active_encounter,
 )
+
+
+def _active_control_types(actor: Player | Enemy) -> Set[ControlType]:
+	control_types: Set[ControlType] = set()
+	for effect in getattr(actor, "active_status_effects", []):
+		status_effect = getattr(effect, "status_effect", None)
+		if status_effect is None:
+			continue
+		effect_type = getattr(status_effect, "type", None)
+		try:
+			parsed_effect_type = effect_type if isinstance(effect_type, StatusEffectType) else StatusEffectType(str(effect_type))
+		except (TypeError, ValueError):
+			continue
+		if parsed_effect_type != StatusEffectType.CONTROL:
+			continue
+		parameters = getattr(status_effect, "parameters", {})
+		if not isinstance(parameters, dict):
+			continue
+		raw_control_type = parameters.get("control_type")
+		if raw_control_type is None:
+			continue
+		try:
+			control_types.add(ControlType(str(raw_control_type)))
+		except ValueError:
+			continue
+	return control_types
+
+
+def _is_entity_stunned(actor: Player | Enemy) -> bool:
+	return ControlType.STUNNED in _active_control_types(actor)
+
+
+def _is_entity_silenced(actor: Player | Enemy) -> bool:
+	return ControlType.SILENCED in _active_control_types(actor)
+
+
+def _is_entity_asleep(actor: Player | Enemy) -> bool:
+	return ControlType.ASLEEP in _active_control_types(actor)
+
+
+def _is_entity_restrained(actor: Player | Enemy) -> bool:
+	return ControlType.RESTRAINED in _active_control_types(actor)
 
 
 GLOBAL_ACTIONS: Set[ActionType] = {
@@ -226,19 +268,15 @@ def validate_encounter_target_ids(session: GameSessionState, target_ids: List[st
 
 
 def validate_attack_rules(session: GameSessionState, action: Action) -> List[RuleViolation]:
-	encounter = get_active_encounter(session)
-	if encounter is None:
-		return [RuleViolation(code="no_active_encounter", message="No active encounter")]
-
-	violations: List[RuleViolation] = []
-	violations.extend(validate_actor_turn(session, action.actor_instance_id))
+	violations = validate_combat_action_prereqs(session, action)
+	if violations:
+		return violations
 
 	actor = resolve_actor(session, action.actor_instance_id)
 	if actor is None:
-		violations.append(RuleViolation(code="actor_not_found", message="Actor not found", field="actor_instance_id"))
-		return violations
-	if actor.hp <= 0:
-		violations.append(RuleViolation(code="actor_defeated", message="Defeated actor cannot act"))
+		return [RuleViolation(code="actor_not_found", message="Actor not found", field="actor_instance_id")]
+
+	violations.extend(validate_attack_control_conditions(actor))
 
 	attack_id = str(action.parameters.get("attack_id", "")).strip()
 	if attack_id:
@@ -264,6 +302,58 @@ def validate_attack_rules(session: GameSessionState, action: Action) -> List[Rul
 		return violations
 
 	violations.extend(validate_encounter_target_ids(session, target_ids))
+	return violations
+
+
+def validate_combat_action_prereqs(session: GameSessionState, action: Action) -> List[RuleViolation]:
+	encounter = get_active_encounter(session)
+	if encounter is None:
+		return [RuleViolation(code="no_active_encounter", message="No active encounter")]
+
+	violations: List[RuleViolation] = []
+	violations.extend(validate_actor_turn(session, action.actor_instance_id))
+
+	actor = resolve_actor(session, action.actor_instance_id)
+	if actor is None:
+		violations.append(RuleViolation(code="actor_not_found", message="Actor not found", field="actor_instance_id"))
+		return violations
+	if actor.hp <= 0:
+		violations.append(RuleViolation(code="actor_defeated", message="Defeated actor cannot act"))
+
+	target_ids = normalize_target_ids(action.parameters.get("target_instance_ids", []))
+	if not target_ids:
+		violations.append(
+			RuleViolation(
+				code="missing_targets",
+				message="Missing targets",
+				field="target_instance_ids",
+			)
+		)
+		return violations
+
+	violations.extend(validate_encounter_target_ids(session, target_ids))
+	return violations
+
+
+def validate_attack_control_conditions(actor: Player | Enemy) -> List[RuleViolation]:
+	violations: List[RuleViolation] = []
+	if _is_entity_stunned(actor):
+		violations.append(RuleViolation(code="actor_stunned", message="Actor is stunned"))
+	if _is_entity_asleep(actor):
+		violations.append(RuleViolation(code="actor_asleep", message="Actor is asleep"))
+	if _is_entity_restrained(actor):
+		violations.append(RuleViolation(code="actor_restrained", message="Actor is restrained"))
+	return violations
+
+
+def validate_spell_control_conditions(actor: Player | Enemy) -> List[RuleViolation]:
+	violations: List[RuleViolation] = []
+	if _is_entity_stunned(actor):
+		violations.append(RuleViolation(code="actor_stunned", message="Actor is stunned"))
+	if _is_entity_asleep(actor):
+		violations.append(RuleViolation(code="actor_asleep", message="Actor is asleep"))
+	if _is_entity_silenced(actor):
+		violations.append(RuleViolation(code="actor_silenced", message="Actor is silenced"))
 	return violations
 
 

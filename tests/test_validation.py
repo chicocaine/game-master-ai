@@ -3,6 +3,7 @@ from core.enums import ActionType, DifficultyType, GameState, RestType, SpellTyp
 from core.models.dungeon import Dungeon, Encounter, Room
 from core.models.enemy import Enemy
 from core.models.spell import Spell
+from core.models.status_effect import StatusEffectDefinition, StatusEffectInstance
 from core.registry.enemy_registry import load_enemy_model_registry
 from core.registry.player_registry import load_player_registry
 from core.states.manager import apply_action
@@ -157,3 +158,109 @@ def test_validate_create_player_rejects_missing_or_empty_weapons():
     result_invalid = validate_action_with_details(session, action_invalid)
     assert not result_invalid.is_valid
     assert any(issue.code == "invalid_weapon_id" for issue in result_invalid.issues)
+
+
+def test_validate_attack_rejected_when_actor_restrained():
+    session = _build_encounter_session()
+    session.party[0].active_status_effects.append(
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_ctrl_restrained_validation",
+                name="Restrained",
+                description="control",
+                type="control",
+                parameters={"control_type": "restrained"},
+            ),
+            duration=2,
+        )
+    )
+
+    action = create_action(
+        ActionType.ATTACK,
+        {
+            "attack_id": session.party[0].merged_attacks[0].id,
+            "target_instance_ids": ["enm_inst_01"],
+        },
+        actor_instance_id="plr_inst_01",
+    )
+
+    result = validate_action_with_details(session, action)
+    assert not result.is_valid
+    assert any(issue.code == "actor_restrained" for issue in result.issues)
+
+
+def test_validate_cast_spell_rejected_when_actor_silenced():
+    session = _build_encounter_session()
+    session.party[0].active_status_effects.append(
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_ctrl_silenced_validation",
+                name="Silenced",
+                description="control",
+                type="control",
+                parameters={"control_type": "silenced"},
+            ),
+            duration=2,
+        )
+    )
+
+    spell = Spell(
+        id="spl_validation_basic",
+        name="Validation Spell",
+        description="spell",
+        type=SpellType.ATTACK,
+        spell_cost=1,
+        parameters={"magnitude": "1d4", "damage_types": [], "hit_modifiers": 0, "DC": 0},
+    )
+    session.party[0].known_spells.append(spell)
+
+    action = create_action(
+        ActionType.CAST_SPELL,
+        {
+            "spell_id": spell.id,
+            "target_instance_ids": ["enm_inst_01"],
+        },
+        actor_instance_id="plr_inst_01",
+    )
+
+    result = validate_action_with_details(session, action)
+    assert not result.is_valid
+    assert any(issue.code == "actor_silenced" for issue in result.issues)
+
+
+def test_validate_cast_spell_allows_restrained_actor():
+    session = _build_encounter_session()
+    session.party[0].active_status_effects.append(
+        StatusEffectInstance(
+            status_effect=StatusEffectDefinition(
+                id="se_ctrl_restrained_validation_spell",
+                name="Restrained",
+                description="control",
+                type="control",
+                parameters={"control_type": "restrained"},
+            ),
+            duration=2,
+        )
+    )
+
+    spell = Spell(
+        id="spl_validation_restrained_ok",
+        name="Validation Spell",
+        description="spell",
+        type=SpellType.ATTACK,
+        spell_cost=1,
+        parameters={"magnitude": "1d4", "damage_types": [], "hit_modifiers": 0, "DC": 0},
+    )
+    session.party[0].known_spells.append(spell)
+
+    action = create_action(
+        ActionType.CAST_SPELL,
+        {
+            "spell_id": spell.id,
+            "target_instance_ids": ["enm_inst_01"],
+        },
+        actor_instance_id="plr_inst_01",
+    )
+
+    result = validate_action_with_details(session, action)
+    assert all(issue.code != "actor_restrained" for issue in result.issues)

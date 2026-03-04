@@ -12,7 +12,7 @@ from core.states.session import (
 )
 
 
-def resolve_advance_turn(session: GameSessionState) -> List[Event]:
+def resolve_advance_turn(session: GameSessionState, emit_turn_started: bool = True) -> List[Event]:
     if not session.encounter.turn_order:
         return []
 
@@ -21,6 +21,9 @@ def resolve_advance_turn(session: GameSessionState) -> List[Event]:
         session.encounter.current_turn_index = 0
         session.encounter.round_number += 1
         return [create_event(EventType.ROUND_STARTED, "round_started", {"round": session.encounter.round_number})]
+
+    if not emit_turn_started:
+        return []
 
     actor_id = session.encounter.turn_order[session.encounter.current_turn_index]
     return [create_event(EventType.TURN_STARTED, "turn_started", {"actor_instance_id": actor_id})]

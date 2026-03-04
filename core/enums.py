@@ -18,6 +18,7 @@ class EventType(Enum):
     GAME_STATE_CHANGED = "game_state_changed"
     TURN_STARTED = "turn_started"
     TURN_ENDED = "turn_ended"
+    TURN_SKIPPED = "turn_skipped"
     ROUND_STARTED = "round_started"
     ROUND_ENDED = "round_ended"
 

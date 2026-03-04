@@ -10,9 +10,11 @@ from core.rules import (
 	can_move_to_room,
 	can_start_session,
 	resolve_actor,
+	validate_combat_action_prereqs,
 	validate_action_legality,
 	validate_actor_turn,
 	validate_attack_rules,
+	validate_spell_control_conditions,
 	validate_rest_constraints,
 )
 from core.states.session import (
@@ -154,13 +156,17 @@ def _validate_attack(session: GameSessionState, action: Action) -> List[Validati
 
 
 def _validate_cast_spell(session: GameSessionState, action: Action) -> List[ValidationIssue]:
-	issues = _validate_attack(session, action)
+	issues = [_issue_from_rule(item) for item in validate_combat_action_prereqs(session, action)]
 	if issues:
 		return issues
 
 	actor = resolve_actor(session, action.actor_instance_id)
 	if actor is None:
 		return [ValidationIssue(code="actor_not_found", message="Actor not found", field="actor_instance_id")]
+
+	issues.extend(_issue_from_rule(item) for item in validate_spell_control_conditions(actor))
+	if issues:
+		return issues
 
 	spell_id = str(action.parameters.get("spell_id", "")).strip()
 	if not spell_id:
