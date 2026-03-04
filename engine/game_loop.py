@@ -28,51 +28,109 @@ class GameLoop:
         self,
         parser: ParserCallback,
         narrator: Optional[NarrationCallback] = None,
+        runtime_logger: Any | None = None,
     ) -> None:
         self.parser = parser
         self.narrator = narrator
+        self.runtime_logger = runtime_logger
         self._pending_clarifications: Dict[int, Dict[str, Any]] = {}
 
     def run_turn(self, session: GameSessionState, raw_input: str) -> LoopTurnResult:
+        previous_turn = session.turn
         session_key = id(session)
+
         pending = self._pending_clarifications.get(session_key)
         if pending is not None:
             resolved = self._resolve_pending_clarification(pending, raw_input)
             if resolved is None:
-                return LoopTurnResult(
+                result = LoopTurnResult(
                     events=[],
                     narration=str(pending.get("question", "")).strip(),
                     clarify=pending,
                     advanced_turn=False,
                 )
+                self._log_runtime_turn(
+                    turn_kind="player",
+                    session=session,
+                    raw_input=raw_input,
+                    result=result,
+                    parsed={"type": "clarify_pending"},
+                    turn_before=previous_turn,
+                )
+                return result
             parsed = resolved
             self._pending_clarifications.pop(session_key, None)
         else:
-            parsed = self.parser(raw_input, session)
+            try:
+                parsed = self.parser(raw_input, session)
+            except Exception as exc:
+                events = [
+                    create_event(
+                        EventType.ACTION_REJECTED,
+                        "action_rejected",
+                        {"errors": [f"Parser failed: {exc}"]},
+                    )
+                ]
+                narration = ""
+                if self.narrator is not None:
+                    narration = self.narrator(events, session)
+                result = LoopTurnResult(
+                    events=events,
+                    narration=narration,
+                    clarify=None,
+                    advanced_turn=False,
+                )
+                self._log_runtime_turn(
+                    turn_kind="player",
+                    session=session,
+                    raw_input=raw_input,
+                    result=result,
+                    parsed={"type": "parser_error", "error": str(exc)},
+                    turn_before=previous_turn,
+                    parser_failed=True,
+                )
+                return result
 
         if isinstance(parsed, dict) and str(parsed.get("type", "")).strip().lower() == "clarify":
             self._pending_clarifications[session_key] = parsed
-            return LoopTurnResult(
+            result = LoopTurnResult(
                 events=[],
                 narration=str(parsed.get("question", "")).strip(),
                 clarify=parsed,
                 advanced_turn=False,
             )
+            self._log_runtime_turn(
+                turn_kind="player",
+                session=session,
+                raw_input=raw_input,
+                result=result,
+                parsed=parsed,
+                turn_before=previous_turn,
+            )
+            return result
 
         action = parsed if isinstance(parsed, Action) else Action.from_dict(parsed)
-        previous_turn = session.turn
         events = apply_action(session, action)
 
         narration = ""
         if self.narrator is not None:
             narration = self.narrator(events, session)
 
-        return LoopTurnResult(
+        result = LoopTurnResult(
             events=events,
             narration=narration,
             clarify=None,
             advanced_turn=session.turn > previous_turn,
         )
+        self._log_runtime_turn(
+            turn_kind="player",
+            session=session,
+            raw_input=raw_input,
+            result=result,
+            parsed=action,
+            turn_before=previous_turn,
+        )
+        return result
 
     def run_enemy_turn(self, session: GameSessionState, selector: EnemyActionCallback) -> LoopTurnResult:
         if session.state != GameState.ENCOUNTER:
@@ -92,6 +150,7 @@ class GameLoop:
             return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
 
         pre_events: List[Event] = []
+        selector_failed = False
         try:
             parsed = selector(session, actor_instance_id)
             if isinstance(parsed, dict) and str(parsed.get("type", "")).strip().lower() == "clarify":
@@ -109,6 +168,7 @@ class GameLoop:
             else:
                 action = parsed if isinstance(parsed, Action) else Action.from_dict(parsed)
         except Exception as exc:
+            selector_failed = True
             pre_events.append(
                 create_event(
                     EventType.ACTION_REJECTED,
@@ -128,12 +188,22 @@ class GameLoop:
         if self.narrator is not None:
             narration = self.narrator(events, session)
 
-        return LoopTurnResult(
+        result = LoopTurnResult(
             events=events,
             narration=narration,
             clarify=None,
             advanced_turn=session.turn > previous_turn,
         )
+        self._log_runtime_turn(
+            turn_kind="enemy",
+            session=session,
+            raw_input=f"enemy:{actor_instance_id}",
+            result=result,
+            parsed=action,
+            turn_before=previous_turn,
+            parser_failed=selector_failed,
+        )
+        return result
 
     def _resolve_pending_clarification(self, clarify_payload: Dict[str, Any], raw_input: str) -> Optional[Dict[str, Any]]:
         options = clarify_payload.get("options", [])
@@ -195,4 +265,38 @@ class GameLoop:
             actor_instance_id=actor_instance_id,
             reasoning="enemy_selector_fallback_end_turn",
             metadata={"source": "engine.game_loop"},
+        )
+
+    def _log_runtime_turn(
+        self,
+        *,
+        turn_kind: str,
+        session: GameSessionState,
+        raw_input: str,
+        result: LoopTurnResult,
+        parsed: Any,
+        turn_before: int,
+        parser_failed: bool = False,
+    ) -> None:
+        if self.runtime_logger is None or not hasattr(self.runtime_logger, "log_turn"):
+            return
+
+        validation_failed = any(event.type == EventType.ACTION_REJECTED for event in result.events) and not parser_failed
+        parsed_payload = parsed.to_dict() if isinstance(parsed, Action) else parsed
+
+        self.runtime_logger.log_turn(
+            {
+                "turn_kind": turn_kind,
+                "state": session.state.value,
+                "turn_before": turn_before,
+                "turn_after": session.turn,
+                "raw_input": raw_input,
+                "advanced_turn": result.advanced_turn,
+                "clarify": result.clarify,
+                "parser_failed": parser_failed,
+                "validation_failed": validation_failed,
+                "parsed": parsed_payload,
+                "events": [event.to_dict() for event in result.events],
+                "narration": result.narration,
+            }
         )

@@ -1,9 +1,12 @@
+import json
+
 from core.enums import ActionType, DifficultyType, GameState
 from core.models.dungeon import Dungeon, Encounter, Room
 from core.models.enemy import Enemy
 from core.registry.enemy_registry import load_enemy_model_registry
 from core.states.session import GameSessionState
 from engine.game_loop import GameLoop
+from engine.runtime_logger import RuntimeTurnLogger
 from engine.state_manager import EngineStateManager
 
 
@@ -201,3 +204,37 @@ def test_game_loop_run_enemy_turn_falls_back_and_logs_rejection_on_selector_erro
     assert result.advanced_turn is True
     assert any(event.type.value == "action_rejected" for event in result.events)
     assert any(event.name == "turn_ended" for event in result.events)
+
+
+def test_game_loop_runtime_logger_marks_parser_failures(tmp_path):
+    session = EngineStateManager("data").create_session()
+    runtime_logger = RuntimeTurnLogger("sess_parser_fail", log_dir=tmp_path)
+    loop = GameLoop(
+        parser=lambda _raw, _session: (_ for _ in ()).throw(ValueError("parse boom")),
+        runtime_logger=runtime_logger,
+    )
+
+    result = loop.run_turn(session, "invalid")
+
+    assert result.advanced_turn is False
+    records = [json.loads(line) for line in runtime_logger.path.read_text(encoding="utf-8").splitlines()]
+    assert len(records) == 1
+    assert records[0]["parser_failed"] is True
+    assert records[0]["validation_failed"] is False
+
+
+def test_game_loop_runtime_logger_marks_validation_failures(tmp_path):
+    session = EngineStateManager("data").create_session()
+    runtime_logger = RuntimeTurnLogger("sess_validation_fail", log_dir=tmp_path)
+    loop = GameLoop(
+        parser=lambda _raw, _session: {"type": "create_player", "parameters": {}},
+        runtime_logger=runtime_logger,
+    )
+
+    result = loop.run_turn(session, "create")
+
+    assert result.advanced_turn is False
+    records = [json.loads(line) for line in runtime_logger.path.read_text(encoding="utf-8").splitlines()]
+    assert len(records) == 1
+    assert records[0]["parser_failed"] is False
+    assert records[0]["validation_failed"] is True
