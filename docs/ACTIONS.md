@@ -29,6 +29,13 @@ All parsed actions should be normalized into one base shape before resolution.
 5. `reasoning` (optional): short machine-readable intent summary.
 6. `metadata` (optional): tracing/debug payload.
 
+## Canonical Terms
+
+- Use `target_instance_ids` for attack/spell targets (string or string[]).
+- Use `race`, `archetype`, and `weapons` in `create_player` parameters.
+- Use `spell_slots` as the canonical spell resource field.
+- `MANA_UPDATED` / `mana_updated` remains a legacy event name; resource values are carried in `spell_slots` (and may include `mana` as compatibility alias).
+
 ## Parameters by Action Type
 
 ### Global
@@ -96,12 +103,18 @@ All parsed actions should be normalized into one base shape before resolution.
 #### `create_player`
 - Purpose: create player instance and add to party.
 - Parameters:
-	- `entity_id` (required, string)
+	- `name` (required, string)
+	- `description` (required, string)
+	- `race` (required, string; race definition id)
+	- `archetype` (required, string; archetype definition id)
+	- `weapons` (required, string[]; weapon definition ids)
+	- `entity_id` (optional, string; defaults to `player_<player_instance_id>`)
 	- `player_instance_id` (optional, string; engine may auto-generate)
-	- `name_override` (optional, string)
-	- `race_id` (optional, string; if not implied by template)
-	- `archetype_id` (optional, string; if not implied by template)
-	- `weapon_ids` (optional, string[])
+
+Legacy aliases accepted for compatibility and normalized by core:
+- `race_id` -> `race`
+- `archetype_id` -> `archetype`
+- `weapon_ids` -> `weapons`
 
 #### `remove_player`
 - Purpose: remove player instance from party.

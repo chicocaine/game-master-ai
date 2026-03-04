@@ -53,7 +53,7 @@ The system is organised into six layers:
 |-------|---------|---------------|
 | **Data** | `data/`, `registry/` | Static JSON game definitions; in-memory indexed registries |
 | **Models** | `models/` | Typed dataclass representations of all game entities |
-| **Core** | `core/` | Deterministic game logic: `action.py`, `validation_engine.py`, `resolution_engine.py`, enums/events/narration, dice, and rules |
+| **Core** | `core/` | Deterministic game logic: `actions.py`, `validation.py`, `rules.py`, `resolution/`, enums/events/narration, and dice |
 | **Engine** | `engine/` | Runtime infrastructure: `game_loop.py`, `state_manager.py`, low-level `llm_client.py`, and orchestration |
 | **Agent** | `agent/` | Decision layer: `agent_manager.py`, `player_parser.py`, `narrator.py`, `enemy_ai.py`, `context_builder.py`, and `memory.py` |
 | **Utilities** | `util/` | JSON Schema validator, entity factory, logging |
@@ -183,10 +183,10 @@ The **Agent Layer** is the only layer permitted to make LLM API calls. It commun
 **`GameStateMachine` (`engine/`).**  
 Maintains the current game state (`PRE_GAME`, `EXPLORATION`, `ENCOUNTER`, `POST_GAME`) and the full mutable game state object (party, current dungeon, current room, turn order, turn index). Exposes a single `submit_action(action) → List[Event]` interface that routes the validated action to the appropriate resolver and returns the resulting event list. State transitions are side effects of specific events (e.g., `ENCOUNTER_STARTED` transitions to `ENCOUNTER`; `ENCOUNTER_CLEARED` returns to `EXPLORATION`).
 
-**`ValidationEngine` (`core/validation_engine.py`).**  
+**`ValidationEngine` (`core/validation.py`).**  
 Stateless component that checks a parsed `Action` against current game state and the `REQUIRED_PARAMETERS` table. Returns a list of error strings; an empty list means the action is legal. Checks include: correct `ActionType` for current state, presence and type of all required parameters, validity of referenced IDs (`target_instance_ids`, `attack_id`, `spell_id`, `room_id`) against the active registry and game state, and game-logic preconditions (target must be alive, room must be connected, etc.).
 
-**`ResolutionEngine` / sub-resolvers (`core/resolution_engine.py`).**  
+**`ResolutionEngine` / sub-resolvers (`core/resolution/`).**  
 Separate resolver modules handle each game phase: `PreGameResolver` processes party management; `ExplorationResolver` handles movement, exploration, and rest; `CombatResolver` handles attack and spell resolution, initiative, and status effect ticks. The `DiceEngine` (`core/dice.py`) provides a seeded `roll(expression)` function accepting standard dice notation (`NdX`, `NdX+M`, `NdX-M`) so combat resolution is fully reproducible given a seed.
 
 **`LLMClient` (`engine/llm_client.py`).**  
@@ -306,9 +306,11 @@ spell_slots = race.base_spell_slots + archetype.spell_slot_mod
 
 Computed properties `merged_attacks`, `merged_spells`, `merged_resistances`, `merged_immunities`, and `merged_vulnerabilities` union and deduplicate contributions from the `Race`, `Archetype`, equipped `Weapon`s, and the entity's own known lists. `Entity.create()` enforces two hard constraint checks at instantiation time: the chosen archetype must appear in `race.archetype_constraints`, and each equipped weapon must satisfy the archetype's `WeaponConstraints` (proficiency, handling, weight class, delivery, magic type). These raise `ValueError` at creation, not at action resolution.
 
-The `Action` dataclass carries the resolved player intent. Its `type` field maps to an `ActionType` enum; `parameters` carries the action-specific payload; `actor_instance_id` identifies the acting entity; `raw_input` preserves the original player text for logging and narration; and `reasoning` stores the LLM's chain-of-thought, which is logged but never shown to the player. Required parameters per `ActionType` are declared in a single `REQUIRED_PARAMETERS` table in `core/action.py`—validation is a table lookup rather than scattered conditional logic.
+The `Action` dataclass carries the resolved player intent. Its `type` field maps to an `ActionType` enum; `parameters` carries the action-specific payload; `actor_instance_id` identifies the acting entity; `raw_input` preserves the original player text for logging and narration; and `reasoning` stores the LLM's chain-of-thought, which is logged but never shown to the player. Required parameters per `ActionType` are declared in a single `REQUIRED_PARAMETERS` table in `core/actions.py`—validation is a table lookup rather than scattered conditional logic.
 
 The `Event` dataclass is the audit primitive for all turn occurrences. Its `payload` carries event-specific data; `source` identifies the originating engine component; and `event_id` is a UUID. Events are the single source of truth for a turn: the narration LLM receives only the event list, never raw engine internals. The `Narration` dataclass pairs rendered prose with a `tone` field consumed by front-end components.
+
+Resource terminology is standardised on `spell_slots` for player/enemy spell resources. The event type name `MANA_UPDATED` is retained as a backwards-compatible label, while event payloads expose `spell_slots` as the canonical field.
 
 ### 4.2 Game State Machine
 

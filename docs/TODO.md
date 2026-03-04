@@ -19,15 +19,17 @@
 - [x] session logging
 - [x] error logging
 
+<!-- Core -->
+- [x] game state types and definitions
+- [x] validation engine
+- [x] resolution engine
+- [x] rules (game rules)
+
 <!-- Game Engine -->
 ## Game Engine
-- [x] game state types and definitions
 - [ ] pre-game loop
 - [ ] in-game loop
 - [ ] post-game loop
-- [ ] validation engine
-- [ ] resolution engine
-- [ ] rules (game rules)
 - [ ] main (state_manager and main game engine loop)
 
 <!-- LLM Integration  -->
@@ -39,6 +41,14 @@
 - [ ] narration
 - [ ] enemy AI
 
+<!-- UI -->
+## UI
+> probably
+
 <!-- checks -->
 ## checks
 - [ ] logging into json
+
+<!-- cleanup -->
+## cleanup
+- [ ] remove duplicate helper functions

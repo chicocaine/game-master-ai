@@ -3,6 +3,7 @@
 > Detailed implementation reference covering architecture, game state, engine loops, LLM integration, and evaluation.
 
 > Canonical gameplay rules are documented in `docs/RULES.md`; rule statements in this document must remain consistent with that file.
+> If implementation notes here conflict with gameplay rules, treat `docs/RULES.md` as authoritative and update this document accordingly.
 
 ---
 
@@ -56,11 +57,11 @@ Player Input (natural language)
 
 | Path | Responsibility |
 |------|----------------|
-| `core/` | Deterministic game logic: `action.py`, `validation_engine.py`, `resolution_engine.py`, dice, rules, and state contracts |
+| `core/` | Deterministic game logic: `actions.py`, `validation.py`, `rules.py`, `resolution/`, dice, events, narration, and state contracts |
 | `engine/` | Execution infrastructure: `game_loop.py`, `state_manager.py`, low-level `llm_client.py`, and runtime orchestration |
 | `agent/` | Decision layer: `agent_manager.py`, `player_parser.py`, `narrator.py`, `enemy_ai.py`, `context_builder.py`, and `memory.py` |
-| `models/` | Typed dataclass models for all game objects |
-| `registry/` | Data loaders and in-memory indexes for static game data |
+| `core/models/` | Typed dataclass models for all game objects |
+| `core/registry/` | Data loaders and in-memory indexes for static game data |
 | `data/` | JSON definitions for races, archetypes, weapons, spells, attacks, enemies, dungeons, status effects |
 | `util/` | JSON schema validator, entity factory, logging helpers |
 | `tests/` | Pytest test suites |
@@ -122,7 +123,7 @@ class Action:
     action_id: str            # uuid
 ```
 
-Required parameters per `ActionType` are declared in a single `REQUIRED_PARAMETERS` table in `core/action.py`, making validation trivially extensible.
+Required parameters per `ActionType` are declared in a single `REQUIRED_PARAMETERS` table in `core/actions.py`, making validation trivially extensible.
 
 #### Event
 ```python
@@ -261,6 +262,8 @@ The engine operates as a state machine. Legal transitions are enforced by the va
 
 **Valid actions:** `create_player`, `remove_player`, `choose_dungeon`, `start`, `abandon`, `query`, `converse`
 
+**Character creation contract (from canonical rules):** `create_player` is expected to carry structural character intent (`name`, `description`, `race`, `archetype`, `weapons`) that must pass validation before entering deterministic resolution.
+
 **`start` preconditions (enforced by validation engine):**
 - At least one player in the party.
 - A dungeon has been chosen (`dungeon_id` is set in game state).
@@ -316,6 +319,8 @@ while state == EXPLORATION:
 #### Encounter Sub-Loop (Turn-Based Combat)
 
 **Valid actions:** `attack`, `cast_spell`, `end_turn`, `converse`, `query`, `abandon`
+
+**Resource legality:** `cast_spell` is legal only on the caster's turn and only when the spell resource cost is payable from current spell slots.
 
 **Turn order:** Initiative is rolled (d20 + modifier) for all combatants at the start of each encounter. Turns proceed in descending initiative order.
 
@@ -383,10 +388,14 @@ The `EnemyAILLM` responds with the same `Action` JSON schema as the player actio
 2. On hit: roll damage using weapon/attack damage expression. Apply resistance/immunity/vulnerability multipliers.
 3. Deduct HP. Emit `ATTACK_HIT` or `ATTACK_MISSED`, `DAMAGE_APPLIED`, `HP_UPDATED`, `DEATH` if applicable.
 4. Apply `applied_status_effects` from the attack on hit.
+5. Multipliers: 
+    - `immunity`: 0x
+    - `resistance`: 0.5x
+    - `vulnerability`: 2x
 
-**Spell resolution:** If spell difficulty class `DC` is `0`, the spell will succeed no matter what, else the `target_entity` will make a `d20` saving throw. AOE spells resolve against each target in `target_instance_ids`. Heal spells skip the hit roll. Emit `SPELL_CAST`, then per-target events.
+**Spell resolution:** If spell difficulty class `DC` is `0`, the spell will succeed no matter what, else the `target_entity` will make a `d20` saving throw. AOE spells resolve against each target in `target_instance_ids`. Heal spells skip the hit roll. Spell-slot/resource spending is validated before deterministic resolution. Emit `SPELL_CAST`, `MANA_UPDATED` (legacy event name) with canonical `spell_slots` payload, then per-target events.
 
-**Status effect resolution:** DoT and HoT `StatusEffectType` are resolved every turn. Control `StatusEffectType` are checked at the start of each turn. AC modifier `StatusEffectType` update the entity's `AC` at application, and returns back to `base_AC` when the status effect is removed. Immunities, Resistances and Vulnerabilities are checked during damage resolutions. 
+**Status effect resolution:** DoT and HoT `StatusEffectType` are resolved every turn. Control `StatusEffectType` are checked at the start of each turn. AC modifier `StatusEffectType` update the entity's `AC` at application, and returns back to `base_AC` when the status effect is removed. Immunities, Resistances and Vulnerabilities are checked during damage resolutions. Non-stackable status-effect types retain the stronger/longer-effective instance; DoT/HoT stacking follows the rule definition.
 
 **Status effect tick:** At end of each actor's turn, the duration of all `active_status_effects` is decremented by 1. Effects at 0 are removed and `STATUS_EFFECT_REMOVED` is emitted.
 
