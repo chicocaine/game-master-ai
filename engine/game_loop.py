@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
+from uuid import uuid4
 
 from core.actions import Action, create_action
 from core.enums import ActionType, EventType, GameState
@@ -36,6 +37,14 @@ class GameLoop:
         self._pending_clarifications: Dict[int, Dict[str, Any]] = {}
 
     def run_turn(self, session: GameSessionState, raw_input: str) -> LoopTurnResult:
+        trace_id = str(uuid4())
+        self._set_active_trace_id(session, trace_id)
+        try:
+            return self._run_turn_with_trace(session, raw_input, trace_id)
+        finally:
+            self._clear_active_trace_id(session)
+
+    def _run_turn_with_trace(self, session: GameSessionState, raw_input: str, trace_id: str) -> LoopTurnResult:
         previous_turn = session.turn
         session_key = id(session)
 
@@ -56,6 +65,7 @@ class GameLoop:
                     result=result,
                     parsed={"type": "clarify_pending"},
                     turn_before=previous_turn,
+                    trace_id=trace_id,
                 )
                 return result
             parsed = resolved
@@ -88,6 +98,7 @@ class GameLoop:
                     parsed={"type": "parser_error", "error": str(exc)},
                     turn_before=previous_turn,
                     parser_failed=True,
+                    trace_id=trace_id,
                 )
                 return result
 
@@ -106,6 +117,7 @@ class GameLoop:
                 result=result,
                 parsed=parsed,
                 turn_before=previous_turn,
+                trace_id=trace_id,
             )
             return result
 
@@ -129,10 +141,24 @@ class GameLoop:
             result=result,
             parsed=action,
             turn_before=previous_turn,
+            trace_id=trace_id,
         )
         return result
 
     def run_enemy_turn(self, session: GameSessionState, selector: EnemyActionCallback) -> LoopTurnResult:
+        trace_id = str(uuid4())
+        self._set_active_trace_id(session, trace_id)
+        try:
+            return self._run_enemy_turn_with_trace(session, selector, trace_id)
+        finally:
+            self._clear_active_trace_id(session)
+
+    def _run_enemy_turn_with_trace(
+        self,
+        session: GameSessionState,
+        selector: EnemyActionCallback,
+        trace_id: str,
+    ) -> LoopTurnResult:
         if session.state != GameState.ENCOUNTER:
             return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
 
@@ -202,6 +228,7 @@ class GameLoop:
             parsed=action,
             turn_before=previous_turn,
             parser_failed=selector_failed,
+            trace_id=trace_id,
         )
         return result
 
@@ -277,6 +304,7 @@ class GameLoop:
         parsed: Any,
         turn_before: int,
         parser_failed: bool = False,
+        trace_id: str = "",
     ) -> None:
         if self.runtime_logger is None or not hasattr(self.runtime_logger, "log_turn"):
             return
@@ -286,6 +314,7 @@ class GameLoop:
 
         self.runtime_logger.log_turn(
             {
+                "trace_id": trace_id,
                 "turn_kind": turn_kind,
                 "state": session.state.value,
                 "turn_before": turn_before,
@@ -300,3 +329,10 @@ class GameLoop:
                 "narration": result.narration,
             }
         )
+
+    def _set_active_trace_id(self, session: GameSessionState, trace_id: str) -> None:
+        setattr(session, "_active_trace_id", trace_id)
+
+    def _clear_active_trace_id(self, session: GameSessionState) -> None:
+        if hasattr(session, "_active_trace_id"):
+            delattr(session, "_active_trace_id")
