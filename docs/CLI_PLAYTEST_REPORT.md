@@ -13,6 +13,7 @@ Scope: Developer CLI readiness checks and scripted play-test execution.
 - `python scripts/cli_test_clarify_flow.py`
 - `python scripts/cli_test_enemy_turn.py`
 - `python scripts/cli_test_suite.py`
+- `python scripts/cli_test_suite.py --json-out logs/sessions/cli_suite_report.json`
 
 ## Results
 
@@ -88,7 +89,7 @@ Scope: Developer CLI readiness checks and scripted play-test execution.
 - Evidence:
   - One-command suite runner executes all six CLI checks
   - Summary reports `total=6`, `passed=6`, `failed=0`
+  - JSON report export written to `logs/sessions/cli_suite_report.json`
 
 ## Next Actions
 1. Expand scripted live CLI run to 5–10 turns for longer-session stability and prompt drift checks.
-2. Add optional export mode for `scripts/cli_test_suite.py` to write machine-readable JSON results.

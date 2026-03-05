@@ -76,7 +76,8 @@ Acceptance criteria:
 - [x] Execute M5 developer CLI play-test checklist and publish first pass/fail report (`docs/CLI_PLAYTEST_REPORT.md`)
 
 ## Follow-up Improvements
-- [ ] Add JSON export mode to `scripts/cli_test_suite.py` for CI/report automation
+- [x] Add JSON export mode to `scripts/cli_test_suite.py` for CI/report automation
+- [ ] Expand scripted live CLI run to 5–10 turns for longer-session stability and prompt drift checks
 
 ## Backlog (Post-MVP)
 - [ ] Dungeon systems expansion (inventory, traps, dynamic events, random encounters, NPC interactions)
