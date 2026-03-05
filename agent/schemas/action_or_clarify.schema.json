@@ -2,6 +2,60 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ActionOrClarify",
   "type": "object",
+  "$defs": {
+    "actionParamsByType": {
+      "allOf": [
+        {
+          "if": {"properties": {"type": {"const": "query"}}},
+          "then": {"properties": {"parameters": {"required": ["question"]}}}
+        },
+        {
+          "if": {"properties": {"type": {"const": "converse"}}},
+          "then": {"properties": {"parameters": {"required": ["message"]}}}
+        },
+        {
+          "if": {"properties": {"type": {"const": "move"}}},
+          "then": {"properties": {"parameters": {"required": ["destination_room_id"]}}}
+        },
+        {
+          "if": {"properties": {"type": {"const": "rest"}}},
+          "then": {"properties": {"parameters": {"required": ["rest_type"]}}}
+        },
+        {
+          "if": {"properties": {"type": {"const": "attack"}}},
+          "then": {
+            "required": ["actor_instance_id"],
+            "properties": {"parameters": {"required": ["attack_id", "target_instance_ids"]}}
+          }
+        },
+        {
+          "if": {"properties": {"type": {"const": "cast_spell"}}},
+          "then": {
+            "required": ["actor_instance_id"],
+            "properties": {"parameters": {"required": ["spell_id", "target_instance_ids"]}}
+          }
+        },
+        {
+          "if": {"properties": {"type": {"const": "create_player"}}},
+          "then": {
+            "properties": {
+              "parameters": {
+                "required": ["name", "description", "race", "archetype", "weapons"]
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"type": {"const": "remove_player"}}},
+          "then": {"properties": {"parameters": {"required": ["player_instance_id"]}}}
+        },
+        {
+          "if": {"properties": {"type": {"const": "choose_dungeon"}}},
+          "then": {"properties": {"parameters": {"required": ["dungeon_id"]}}}
+        }
+      ]
+    }
+  },
   "oneOf": [
     {
       "required": ["type", "question", "ambiguous_field"],
@@ -58,6 +112,7 @@
         "reasoning": {"type": "string"},
         "metadata": {"type": "object"}
       },
+      "allOf": [{"$ref": "#/$defs/actionParamsByType"}],
       "additionalProperties": true
     }
   ]

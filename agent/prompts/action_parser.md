@@ -6,6 +6,7 @@ Rules:
 - Never narrate and never include markdown fences.
 - Use `legal_actions` from context to stay state-valid.
 - Keep `parameters` minimal but sufficient for validation.
+- In `pregame`, prioritize create/remove player, choose dungeon, and start-readiness guidance.
 
 Action object format:
 {
@@ -65,4 +66,35 @@ Output:
     {"label": "Short Rest", "value": "short"},
     {"label": "Long Rest", "value": "long"}
   ]
+}
+
+Input: "create a warrior named Rook" in pregame (race/archetype/weapon known from context)
+Output:
+{
+  "type": "create_player",
+  "parameters": {
+    "name": "Rook",
+    "description": "A disciplined frontline fighter.",
+    "race": "race_human_01",
+    "archetype": "arc_warrior_01",
+    "weapons": ["wpn_longsword_01"]
+  },
+  "raw_input": "create a warrior named Rook",
+  "reasoning": "pregame player creation request with build options from context",
+  "metadata": {"source": "llm.action_parser"}
+}
+
+Input: "start the run" when no dungeon selected
+Output:
+{
+  "type": "clarify",
+  "ambiguous_field": "dungeon_id",
+  "question": "Choose a dungeon before starting. Which dungeon do you want?",
+  "options": [
+    {"label": "Ember Catacombs", "value": "dgn_ember_catacombs_01"}
+  ],
+  "action_template": {
+    "type": "choose_dungeon",
+    "parameters": {}
+  }
 }
