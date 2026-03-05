@@ -55,17 +55,18 @@
 - [x] Add CLI preflight check script (env present, API key set, data files load, log paths writable)
 - [x] Add deterministic CLI test script (`main.py` without `--live-llm`) for pregame → exploration → encounter → postgame flow
 - [x] Add live CLI smoke script (`main.py --live-llm`) with scripted 5–10 turn session
-- [ ] Verify pregame party build flow in CLI (create/remove player, choose dungeon, start gating)
-- [ ] Verify clarify loop UX in CLI (no turn advance, option selection works)
-- [ ] Verify enemy turn behavior in CLI (legal action + fallback to `end_turn`)
+- [x] Verify pregame party build flow in CLI (create/remove player, choose dungeon, start gating)
+- [x] Verify clarify loop UX in CLI (no turn advance, option selection works)
+- [x] Verify enemy turn behavior in CLI (legal action + fallback to `end_turn`)
 - [x] Verify logs are correlated per turn (`trace_id`, `session_id`, `llm_request_id`)
 - [x] Verify replay workflow from produced logs (`scripts/replay_turn_log.py`)
 - [x] Add pass/fail play-test checklist document under `docs/` with known issues and repro steps
+- [x] Add one-command CLI suite runner (`scripts/cli_test_suite.py`) for M5 readiness checks
 
 Acceptance criteria:
 - [x] A developer can run one deterministic and one live scripted play-test end-to-end with zero crashes
 - [x] CLI output, runtime logs, and LLM logs are sufficient to reconstruct each tested turn
-- [ ] Any failed turns include actionable error/validation feedback
+- [x] Any failed turns include actionable error/validation feedback
 
 ## Next Step (Immediate)
 - [x] Run live smoke session with `python main.py --live-llm` using `.env`
@@ -73,6 +74,9 @@ Acceptance criteria:
 - [x] Tune few-shot examples and schema constraints based on real failure cases
 - [x] Add deterministic turn-log replay script for debugging and regression workflows
 - [x] Execute M5 developer CLI play-test checklist and publish first pass/fail report (`docs/CLI_PLAYTEST_REPORT.md`)
+
+## Follow-up Improvements
+- [ ] Add JSON export mode to `scripts/cli_test_suite.py` for CI/report automation
 
 ## Backlog (Post-MVP)
 - [ ] Dungeon systems expansion (inventory, traps, dynamic events, random encounters, NPC interactions)

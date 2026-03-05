@@ -9,6 +9,10 @@ Scope: Developer CLI readiness checks and scripted play-test execution.
 - `python scripts/cli_test_live_smoke.py`
 - `python scripts/replay_turn_log.py <latest_turn_log> --strict-events`
 - `python -m pytest -q`
+- `python scripts/cli_test_pregame_gating.py`
+- `python scripts/cli_test_clarify_flow.py`
+- `python scripts/cli_test_enemy_turn.py`
+- `python scripts/cli_test_suite.py`
 
 ## Results
 
@@ -54,12 +58,37 @@ Scope: Developer CLI readiness checks and scripted play-test execution.
   - Live scripted CLI smoke test
   - Log correlation verification
   - Replay workflow verification
-- PARTIAL / TODO:
-  - Clarify UX verification via CLI transcript-focused scenario
-  - Enemy-turn fallback verification in scripted CLI scenario
   - Pregame `remove_player` and strict start-gating negative-path CLI scenario
+  - Clarify UX verification via scripted CLI transcript scenario
+  - Enemy-turn legal + fallback verification in scripted runtime scenario
+
+## Pass 2 Addendum
+
+### Pregame Gating Scenario
+- Status: PASS
+- Evidence:
+  - Rejected `start` before setup
+  - `remove_player` flow observed
+  - Successful `start` after player+dungeon setup
+
+### Clarify UX Scenario
+- Status: PASS
+- Evidence:
+  - First clarify turn does not advance turn
+  - Option selection resolves to actionable query and advances turn
+
+### Enemy Turn Scenario
+- Status: PASS
+- Evidence:
+  - Legal enemy turn executes with events
+  - Forced selector error emits rejection and falls back to `end_turn`
+
+### Aggregated M5 Suite
+- Status: PASS
+- Evidence:
+  - One-command suite runner executes all six CLI checks
+  - Summary reports `total=6`, `passed=6`, `failed=0`
 
 ## Next Actions
-1. Add deterministic scripted scenario that intentionally triggers clarify flow and validates no turn advance in CLI logs.
-2. Add scripted enemy-turn scenario that forces selector fallback path and checks emitted rejection + `end_turn` behavior.
-3. Add negative pregame start-gating script (`start` before selecting dungeon/party) and assert actionable rejection output.
+1. Expand scripted live CLI run to 5–10 turns for longer-session stability and prompt drift checks.
+2. Add optional export mode for `scripts/cli_test_suite.py` to write machine-readable JSON results.
