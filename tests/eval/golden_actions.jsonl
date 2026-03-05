@@ -1,0 +1,3 @@
+{"id":"case_001","game_state":"encounter","raw_input":"attack the skeleton","expected_action_type":"attack","expected_parameters":{"attack_id":"atk_sword_01","target_instance_ids":["enm_inst_01"]},"tags":["combat","unambiguous"]}
+{"id":"case_002","game_state":"exploration","raw_input":"what can i do","expected_action_type":"query","expected_parameters":{"question":"what can i do"},"tags":["query"]}
+{"id":"case_003","game_state":"exploration","raw_input":"take a rest","expected_action_type":"rest","expected_parameters":{"rest_type":"short"},"tags":["rest"]}
