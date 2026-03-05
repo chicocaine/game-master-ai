@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EnemyAction",
+  "type": "object",
+  "required": ["type", "actor_instance_id", "parameters"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["attack", "cast_spell", "end_turn"]
+    },
+    "actor_instance_id": {"type": "string", "minLength": 1},
+    "parameters": {"type": "object"},
+    "reasoning": {"type": "string"},
+    "metadata": {"type": "object"}
+  },
+  "additionalProperties": true
+}
