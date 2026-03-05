@@ -22,6 +22,12 @@ class LoopTurnResult:
     narration: str = ""
     clarify: Optional[Dict[str, Any]] = None
     advanced_turn: bool = False
+    action_type: str = ""
+    actor_instance_id: str = ""
+    turn_kind: str = "player"
+    state: str = ""
+    trace_id: str = ""
+    parsed_action: Optional[Dict[str, Any]] = None
 
 
 class GameLoop:
@@ -57,6 +63,12 @@ class GameLoop:
                     narration=str(pending.get("question", "")).strip(),
                     clarify=pending,
                     advanced_turn=False,
+                    action_type="clarify",
+                    actor_instance_id="",
+                    turn_kind="player",
+                    state=session.state.value,
+                    trace_id=trace_id,
+                    parsed_action={"type": "clarify_pending"},
                 )
                 self._log_runtime_turn(
                     turn_kind="player",
@@ -89,6 +101,12 @@ class GameLoop:
                     narration=narration,
                     clarify=None,
                     advanced_turn=False,
+                    action_type="parser_error",
+                    actor_instance_id="",
+                    turn_kind="player",
+                    state=session.state.value,
+                    trace_id=trace_id,
+                    parsed_action={"type": "parser_error", "error": str(exc)},
                 )
                 self._log_runtime_turn(
                     turn_kind="player",
@@ -109,6 +127,12 @@ class GameLoop:
                 narration=str(parsed.get("question", "")).strip(),
                 clarify=parsed,
                 advanced_turn=False,
+                action_type="clarify",
+                actor_instance_id=str(parsed.get("actor_instance_id", "")) if isinstance(parsed, dict) else "",
+                turn_kind="player",
+                state=session.state.value,
+                trace_id=trace_id,
+                parsed_action=parsed,
             )
             self._log_runtime_turn(
                 turn_kind="player",
@@ -133,6 +157,12 @@ class GameLoop:
             narration=narration,
             clarify=None,
             advanced_turn=session.turn > previous_turn,
+            action_type=action.type.value,
+            actor_instance_id=action.actor_instance_id,
+            turn_kind="player",
+            state=session.state.value,
+            trace_id=trace_id,
+            parsed_action=action.to_dict(),
         )
         self._log_runtime_turn(
             turn_kind="player",
@@ -160,20 +190,75 @@ class GameLoop:
         trace_id: str,
     ) -> LoopTurnResult:
         if session.state != GameState.ENCOUNTER:
-            return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
+            return LoopTurnResult(
+                events=[],
+                narration="",
+                clarify=None,
+                advanced_turn=False,
+                action_type="",
+                actor_instance_id="",
+                turn_kind="enemy",
+                state=session.state.value,
+                trace_id=trace_id,
+                parsed_action=None,
+            )
 
         encounter = get_active_encounter(session)
         if encounter is None:
-            return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
+            return LoopTurnResult(
+                events=[],
+                narration="",
+                clarify=None,
+                advanced_turn=False,
+                action_type="",
+                actor_instance_id="",
+                turn_kind="enemy",
+                state=session.state.value,
+                trace_id=trace_id,
+                parsed_action=None,
+            )
         if not session.encounter.turn_order:
-            return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
+            return LoopTurnResult(
+                events=[],
+                narration="",
+                clarify=None,
+                advanced_turn=False,
+                action_type="",
+                actor_instance_id="",
+                turn_kind="enemy",
+                state=session.state.value,
+                trace_id=trace_id,
+                parsed_action=None,
+            )
         if session.encounter.current_turn_index >= len(session.encounter.turn_order):
-            return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
+            return LoopTurnResult(
+                events=[],
+                narration="",
+                clarify=None,
+                advanced_turn=False,
+                action_type="",
+                actor_instance_id="",
+                turn_kind="enemy",
+                state=session.state.value,
+                trace_id=trace_id,
+                parsed_action=None,
+            )
 
         actor_instance_id = session.encounter.turn_order[session.encounter.current_turn_index]
         enemy_ids = {enemy.enemy_instance_id for enemy in encounter.enemies}
         if actor_instance_id not in enemy_ids:
-            return LoopTurnResult(events=[], narration="", clarify=None, advanced_turn=False)
+            return LoopTurnResult(
+                events=[],
+                narration="",
+                clarify=None,
+                advanced_turn=False,
+                action_type="",
+                actor_instance_id=actor_instance_id,
+                turn_kind="enemy",
+                state=session.state.value,
+                trace_id=trace_id,
+                parsed_action=None,
+            )
 
         pre_events: List[Event] = []
         selector_failed = False
@@ -219,6 +304,12 @@ class GameLoop:
             narration=narration,
             clarify=None,
             advanced_turn=session.turn > previous_turn,
+            action_type=action.type.value,
+            actor_instance_id=action.actor_instance_id,
+            turn_kind="enemy",
+            state=session.state.value,
+            trace_id=trace_id,
+            parsed_action=action.to_dict(),
         )
         self._log_runtime_turn(
             turn_kind="enemy",

@@ -8,6 +8,7 @@ from agent.agent_manager import AgentManager
 from core.enums import GameState
 from core.states.session import find_player_by_instance_id, get_active_encounter
 from engine.config import load_llm_settings
+from engine.cli import render_startup, render_turn_result
 from engine.game_loop import GameLoop, LoopTurnResult
 from engine.llm_client import LLMClient, LLMError, LLMRequest
 from engine.llm_transports import build_transport
@@ -114,29 +115,6 @@ def _is_enemy_turn(session) -> bool:
 	return find_player_by_instance_id(session, actor_id) is None
 
 
-def _render_turn_result(result: LoopTurnResult) -> None:
-	if result.clarify:
-		print(f"\nClarify: {result.clarify.get('question', '').strip()}")
-		options = result.clarify.get("options", [])
-		for index, option in enumerate(options, start=1):
-			if isinstance(option, dict):
-				label = str(option.get("label", option.get("value", ""))).strip()
-			else:
-				label = str(option).strip()
-			if label:
-				print(f"  {index}) {label}")
-		return
-
-	if result.narration.strip():
-		print(f"\n{result.narration.strip()}")
-	elif result.events:
-		print("\nEvents:")
-		for event in result.events:
-			print(f"- {event.name}")
-	else:
-		print("\n(no output)")
-
-
 def run_cli(enable_live_llm: bool) -> None:
 	session_id = f"sess_{uuid4().hex[:8]}"
 	state_manager = EngineStateManager("data")
@@ -153,9 +131,7 @@ def run_cli(enable_live_llm: bool) -> None:
 		runtime_logger=runtime_logger,
 	)
 
-	print("Game Master AI CLI")
-	print(mode_label)
-	print("Type 'quit' or 'exit' to stop. Input can be natural language or action JSON.")
+	render_startup(mode_label)
 
 	while True:
 		try:
@@ -172,11 +148,11 @@ def run_cli(enable_live_llm: bool) -> None:
 			break
 
 		result = loop.run_turn(session, raw)
-		_render_turn_result(result)
+		render_turn_result(result)
 
 		while _is_enemy_turn(session):
 			enemy_result = loop.run_enemy_turn(session, agent.choose_enemy_action)
-			_render_turn_result(enemy_result)
+			render_turn_result(enemy_result)
 			if enemy_result.clarify is not None:
 				break
 

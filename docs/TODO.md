@@ -19,6 +19,7 @@
 - [x] Prompt templates upgraded with few-shot examples
 - [x] Role-specific temperature and max-token configuration
 - [x] Evaluation harness scaffolding and metric tests
+- [x] Pre-UI debug CLI layer under `engine/cli` with labeled output for narration, parsed action payloads, action type, and turn trace context
 - [x] Test suite baseline updated and passing (`155 passed`)
 
 ### 🚧 In Progress
@@ -62,6 +63,7 @@
 - [x] Verify replay workflow from produced logs (`scripts/replay_turn_log.py`)
 - [x] Add pass/fail play-test checklist document under `docs/` with known issues and repro steps
 - [x] Add one-command CLI suite runner (`scripts/cli_test_suite.py`) for M5 readiness checks
+- [x] Move CLI rendering/labels into `engine/cli` helpers for debugging-oriented terminal UX
 
 Acceptance criteria:
 - [x] A developer can run one deterministic and one live scripted play-test end-to-end with zero crashes
