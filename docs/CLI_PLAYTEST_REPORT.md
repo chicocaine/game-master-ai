@@ -14,6 +14,8 @@ Scope: Developer CLI readiness checks and scripted play-test execution.
 - `python scripts/cli_test_enemy_turn.py`
 - `python scripts/cli_test_suite.py`
 - `python scripts/cli_test_suite.py --json-out logs/sessions/cli_suite_report.json`
+- `python scripts/cli_test_live_extended.py`
+- `python scripts/cli_test_suite.py --include-extended-live --json-out logs/sessions/cli_suite_report_extended.json`
 
 ## Results
 
@@ -91,5 +93,19 @@ Scope: Developer CLI readiness checks and scripted play-test execution.
   - Summary reports `total=6`, `passed=6`, `failed=0`
   - JSON report export written to `logs/sessions/cli_suite_report.json`
 
+### Live Extended (5–10 Turn) Scenario
+- Status: PASS
+- Evidence:
+  - Extended live script completes with `return_code=0`
+  - Debug turn count meets threshold (`debug_turn_count=6`)
+
+### Aggregated M5 Suite (Extended)
+- Status: PASS
+- Evidence:
+  - Suite runner supports `--include-extended-live`
+  - Summary reports `total=7`, `passed=7`, `failed=0`
+  - Extended JSON report written to `logs/sessions/cli_suite_report_extended.json`
+
 ## Next Actions
-1. Expand scripted live CLI run to 5–10 turns for longer-session stability and prompt drift checks.
+1. Add trend comparison helper for successive `cli_suite_report*.json` files (detect regressions in pass/fail and timing).
+2. Add optional per-step timeout controls in `scripts/cli_test_suite.py` for slower environments.

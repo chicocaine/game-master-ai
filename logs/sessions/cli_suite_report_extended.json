@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-03-06T02:59:53.665552+00:00",
+  "total": 7,
+  "passed": 7,
+  "failed": 0,
+  "failed_steps": [],
+  "results": [
+    {
+      "script": "cli_preflight.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "CLI Preflight\n- env: PASS - LLM_API_KEY present\n- data: PASS - data templates loaded\n- logs: PASS - logs/sessions writable\nPreflight result: PASS"
+    },
+    {
+      "script": "cli_test_deterministic.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "Deterministic CLI Test\n- return_code: 0\n- started_cli: True\n- produced_turn_log: True"
+    },
+    {
+      "script": "cli_test_live_smoke.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "Live CLI Smoke Test\n- return_code: 0\n- started_cli: True\n- mode_line_present: True"
+    },
+    {
+      "script": "cli_test_pregame_gating.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "Pregame Gating CLI Test\n- return_code: 0\n- rejected_start_without_setup: True\n- remove_player_flow_seen: True\n- successful_start_after_setup: True"
+    },
+    {
+      "script": "cli_test_clarify_flow.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "Clarify Flow CLI Test\n- return_code: 0\n- first_turn_clarify_no_advance: True\n- second_turn_advanced: True\n- second_turn_query_action: True"
+    },
+    {
+      "script": "cli_test_enemy_turn.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "Enemy Turn Runtime Test\n- enemy_id: enm_inst_cli_enemy_01\n- legal_enemy_turn_ok: True\n- fallback_has_rejection: True\n- fallback_has_turn_end: True"
+    },
+    {
+      "script": "cli_test_live_extended.py",
+      "passed": true,
+      "status": "PASS",
+      "output": "Live CLI Extended Test\n- return_code: 0\n- started_cli: True\n- mode_line_present: True\n- debug_turn_count: 6"
+    }
+  ]
+}

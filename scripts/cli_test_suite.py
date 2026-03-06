@@ -30,6 +30,11 @@ def main() -> None:
         default="",
         help="Optional path to write machine-readable JSON results",
     )
+    parser.add_argument(
+        "--include-extended-live",
+        action="store_true",
+        help="Include the longer 5-10 turn live scripted run",
+    )
     args = parser.parse_args()
 
     steps = [
@@ -40,6 +45,8 @@ def main() -> None:
         "cli_test_clarify_flow.py",
         "cli_test_enemy_turn.py",
     ]
+    if args.include_extended_live:
+        steps.append("cli_test_live_extended.py")
 
     print("CLI Test Suite (M5)")
     failed: list[str] = []
